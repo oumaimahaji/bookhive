@@ -11,7 +11,7 @@ class SessionsController extends Controller
     // Afficher la page de login
     public function create()
     {
-        return view('session.login-session'); // correspond à ta structure
+        return view('session.login-session');
     }
 
     // Authentification et redirection selon rôle
@@ -31,9 +31,11 @@ class SessionsController extends Controller
             if ($user->isAdmin()) {
                 return redirect()->intended('/dashboard')->with('success', 'Welcome Admin!');
             } elseif ($user->isModerator()) {
-    return view('dashboard_moderator'); // correspond à ta vue
-}            elseif ($user->isClubManager()) {
-                return redirect()->route('dashboard.club_manager')->with('success', 'Welcome Club Manager!');
+                // REDIRECT TO THE WORKING MODERATOR DASHBOARD URL
+                return redirect()->intended('/moderator/dashboard')->with('success', 'Welcome Moderator!');
+            } elseif ($user->isClubManager()) {
+                // CORRECTION: Utiliser le bon nom de route
+                return redirect()->route('club_manager.dashboard')->with('success', 'Welcome Club Manager!');
             } else {
                 return redirect()->route('dashboard.user')->with('success', 'Welcome!');
             }
