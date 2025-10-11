@@ -131,6 +131,32 @@
                     <span class="nav-link-text ms-1">Reviews</span>
                 </a>
             </li>
+
+
+{{-- AJOUTEZ CETTE SECTION APRÈS LA SECTION "Manage Library" --}}
+<li class="nav-item mt-3">
+    <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Manage Community</h6>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link {{ (Request::is('posts*') || Request::is('admin/posts*') ? 'active' : '') }}" href="{{ route('posts.index') }}">
+        <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="fas fa-newspaper text-dark"></i>
+        </div>
+        <span class="nav-link-text ms-1">Posts Management</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link {{ (Request::is('comments*') || Request::is('admin/comments*') ? 'active' : '') }}" href="{{ route('comments.index') }}">
+        <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="fas fa-comments text-dark"></i>
+        </div>
+        <span class="nav-link-text ms-1">Comments Management</span>
+    </a>
+</li>
+
+
         </ul>
     </div>
 </aside>

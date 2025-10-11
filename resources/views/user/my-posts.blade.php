@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Posts - BookHive</title>
     
-    <!-- FontAwesome & Tailwind -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -33,6 +32,50 @@
         .post-content.hidden {
             display: none;
         }
+        
+        .post-image-container {
+            position: relative;
+            margin: 1rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+        .post-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            display: block;
+        }
+        .image-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .post-image-container:hover .image-actions {
+            opacity: 1;
+        }
+        
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: #f0f9ff;
+        }
+        
+        .image-preview {
+            max-width: 300px;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -57,18 +100,59 @@
         <!-- Create Post Card -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
             <h2 class="text-lg font-semibold mb-4 text-gray-900">Create New Post</h2>
-            <form action="{{ route('user.posts.store') }}" method="POST">
+            <form action="{{ route('user.posts.store') }}" method="POST" enctype="multipart/form-data" id="createPostForm">
                 @csrf
+                
                 <div class="mb-4">
                     <input type="text" name="titre" required 
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-medium"
                            placeholder="What's on your mind?" maxlength="255">
                 </div>
+                
                 <div class="mb-4">
                     <textarea name="contenu" required rows="4"
                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                               placeholder="Share your thoughts..."></textarea>
                 </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Add Image (Optional)</label>
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <div class="flex flex-col items-center justify-center space-y-3">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400"></i>
+                            <div class="text-center">
+                                <p class="text-sm font-medium text-gray-700">Drag & drop your image here</p>
+                                <p class="text-xs text-gray-500 mt-1">or click to browse</p>
+                            </div>
+                            <input type="file" name="image" id="imageInput" 
+                                   accept="image/jpeg,image/png,image/jpg,image/gif"
+                                   class="hidden">
+                            <button type="button" id="chooseFileBtn" 
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-folder-open mr-2"></i>Choose File
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="imagePreview" class="hidden mt-4">
+                        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <img id="previewImage" src="" class="w-12 h-12 object-cover rounded">
+                                <div>
+                                    <p id="fileName" class="text-sm font-medium text-gray-700"></p>
+                                    <p id="fileSize" class="text-xs text-gray-500"></p>
+                                </div>
+                            </div>
+                            <button type="button" id="removeImageBtn" class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500 mt-2">Formats: JPEG, PNG, JPG, GIF | Max: 2MB</p>
+                </div>
+                
                 <div class="flex justify-end">
                     <button type="submit" 
                             class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2">
@@ -99,13 +183,11 @@
                         </div>
                         @if($post->user_id === Auth::id())
                         <div class="flex items-center gap-2">
-                            <!-- Icône de modification -->
                             <button type="button" 
                                     class="text-gray-400 hover:text-blue-600 transition-colors edit-post-btn"
                                     data-post-id="{{ $post->id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <!-- Formulaire de suppression -->
                             <form action="{{ route('user.posts.delete', $post) }}" method="POST" 
                                   onsubmit="return confirm('Delete this post?')">
                                 @csrf
@@ -119,27 +201,81 @@
                     </div>
                 </div>
 
-                <!-- Post Content (Affichage normal) -->
+                <!-- Post Content -->
                 <div class="post-content px-6 pb-4" id="post-content-{{ $post->id }}">
                     <h4 class="text-xl font-semibold text-gray-900 mb-3">{{ $post->titre }}</h4>
-                    <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ $post->contenu }}</p>
+                    <p class="text-gray-700 leading-relaxed whitespace-pre-line mb-4">{{ $post->contenu }}</p>
+                    
+                    @if($post->image)
+                    <div class="post-image-container">
+                        <img src="{{ asset('storage/' . $post->image) }}" 
+                             alt="Post image" 
+                             class="post-image">
+                        <div class="image-actions">
+                            <button type="button" 
+                                    class="bg-white bg-opacity-90 p-2 rounded-full shadow-sm hover:bg-opacity-100 transition-all image-expand-btn"
+                                    data-image-src="{{ asset('storage/' . $post->image) }}">
+                                <i class="fas fa-expand text-gray-700"></i>
+                            </button>
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
-                <!-- Formulaire d'édition (caché par défaut) -->
+                <!-- Edit Form -->
                 <div class="edit-form px-6 pb-4" id="edit-form-{{ $post->id }}">
-                    <form action="{{ route('user.posts.update', $post) }}" method="POST" class="space-y-4">
+                    <form action="{{ route('user.posts.update', $post) }}" method="POST" class="space-y-4" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
+                        
                         <div>
                             <input type="text" name="titre" value="{{ $post->titre }}" required 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-medium"
                                    placeholder="Post title" maxlength="255">
                         </div>
+                        
                         <div>
                             <textarea name="contenu" required rows="4"
                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                       placeholder="Post content">{{ $post->contenu }}</textarea>
                         </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Image</label>
+                            
+                            @if($post->image)
+                            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm font-medium text-gray-700 mb-2">Current Image:</p>
+                                <div class="flex items-center space-x-4">
+                                    <img src="{{ asset('storage/' . $post->image) }}" 
+                                         class="image-preview">
+                                    <div class="flex-1">
+                                        <label class="flex items-center text-sm text-red-600 cursor-pointer">
+                                            <input type="checkbox" name="remove_image" value="1" class="mr-2">
+                                            Remove current image
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            
+                            <div class="upload-area edit-upload-area" data-post-id="{{ $post->id }}">
+                                <div class="flex flex-col items-center justify-center space-y-3">
+                                    <i class="fas fa-cloud-upload-alt text-2xl text-gray-400"></i>
+                                    <p class="text-sm text-gray-600">Click to change image</p>
+                                    <input type="file" name="image" 
+                                           accept="image/jpeg,image/png,image/jpg,image/gif"
+                                           class="hidden edit-image-input"
+                                           id="editImageInput{{ $post->id }}">
+                                    <button type="button" 
+                                            class="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors change-image-btn"
+                                            data-post-id="{{ $post->id }}">
+                                        Change Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="flex justify-end gap-3">
                             <button type="button" 
                                     class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors font-medium cancel-edit-btn"
@@ -230,9 +366,146 @@
 
     </main>
 
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50 flex items-center justify-center p-4">
+        <div class="relative max-w-4xl max-h-full">
+            <button id="closeModalBtn" class="absolute -top-12 right-0 text-white text-2xl hover:text-gray-300">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="modalImage" src="" class="max-w-full max-h-screen object-contain">
+        </div>
+    </div>
+
     <script>
-        // Simple animations
+        // Fonctions globales
+        function openImageModal(src) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function removeImage() {
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('uploadArea').classList.remove('hidden');
+            document.getElementById('imageInput').value = '';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Gestion de l'upload d'image
+            const uploadArea = document.getElementById('uploadArea');
+            const imageInput = document.getElementById('imageInput');
+            const chooseFileBtn = document.getElementById('chooseFileBtn');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImage = document.getElementById('previewImage');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const removeImageBtn = document.getElementById('removeImageBtn');
+
+            // Événements pour l'upload
+            uploadArea.addEventListener('click', function() {
+                imageInput.click();
+            });
+
+            chooseFileBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                imageInput.click();
+            });
+
+            imageInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewImage.src = e.target.result;
+                            fileName.textContent = file.name;
+                            fileSize.textContent = formatFileSize(file.size);
+                            imagePreview.classList.remove('hidden');
+                            uploadArea.classList.add('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+            });
+
+            removeImageBtn.addEventListener('click', removeImage);
+
+            // Gestion de l'édition des posts
+            const editButtons = document.querySelectorAll('.edit-post-btn');
+            const cancelButtons = document.querySelectorAll('.cancel-edit-btn');
+            const changeImageBtns = document.querySelectorAll('.change-image-btn');
+            const editUploadAreas = document.querySelectorAll('.edit-upload-area');
+
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const postId = this.getAttribute('data-post-id');
+                    const postContent = document.getElementById('post-content-' + postId);
+                    const editForm = document.getElementById('edit-form-' + postId);
+
+                    postContent.classList.add('hidden');
+                    editForm.classList.add('active');
+                });
+            });
+
+            cancelButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const postId = this.getAttribute('data-post-id');
+                    const postContent = document.getElementById('post-content-' + postId);
+                    const editForm = document.getElementById('edit-form-' + postId);
+
+                    postContent.classList.remove('hidden');
+                    editForm.classList.remove('active');
+                });
+            });
+
+            changeImageBtns.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const postId = this.getAttribute('data-post-id');
+                    document.getElementById('editImageInput' + postId).click();
+                });
+            });
+
+            editUploadAreas.forEach(area => {
+                area.addEventListener('click', function() {
+                    const postId = this.getAttribute('data-post-id');
+                    document.getElementById('editImageInput' + postId).click();
+                });
+            });
+
+            // Gestion du modal d'image
+            const imageExpandBtns = document.querySelectorAll('.image-expand-btn');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+
+            imageExpandBtns.forEach(button => {
+                button.addEventListener('click', function() {
+                    const imageSrc = this.getAttribute('data-image-src');
+                    openImageModal(imageSrc);
+                });
+            });
+
+            closeModalBtn.addEventListener('click', closeImageModal);
+
+            // Fermer modal avec ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeImageModal();
+                }
+            });
+
+            // Animation des posts
             const postCards = document.querySelectorAll('.post-card');
             postCards.forEach((card, index) => {
                 card.style.opacity = '0';
@@ -243,34 +516,6 @@
                     card.style.opacity = '1';
                     card.style.transform = 'translateY(0)';
                 }, index * 100);
-            });
-
-            // Gestion de l'édition des posts
-            const editButtons = document.querySelectorAll('.edit-post-btn');
-            const cancelButtons = document.querySelectorAll('.cancel-edit-btn');
-
-            editButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const postId = this.getAttribute('data-post-id');
-                    const postContent = document.getElementById(`post-content-${postId}`);
-                    const editForm = document.getElementById(`edit-form-${postId}`);
-
-                    // Masquer le contenu et afficher le formulaire d'édition
-                    postContent.classList.add('hidden');
-                    editForm.classList.add('active');
-                });
-            });
-
-            cancelButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const postId = this.getAttribute('data-post-id');
-                    const postContent = document.getElementById(`post-content-${postId}`);
-                    const editForm = document.getElementById(`edit-form-${postId}`);
-
-                    // Masquer le formulaire et afficher le contenu
-                    postContent.classList.remove('hidden');
-                    editForm.classList.remove('active');
-                });
             });
         });
     </script>

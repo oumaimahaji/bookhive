@@ -10,19 +10,82 @@ use Illuminate\Http\Request;
 class CommentController extends Controller
 {
     // List all comments
-    public function index(Request $request)
-    {
-        $comments = Comment::with('user', 'post')->get();
-        $users = User::all();
-        $posts = Post::all();
-        $editComment = null;
-
-        if ($request->has('edit')) {
-            $editComment = Comment::find($request->input('edit'));
-        }
-
-        return view('comments.index', compact('comments', 'users', 'posts', 'editComment'));
+public function index(Request $request)
+{
+    $query = Comment::with(['user', 'post']);
+    
+    // Advanced Search Filters
+    if ($request->filled('content')) {
+        $query->where('contenu', 'like', '%' . $request->content . '%');
     }
+    
+    if ($request->filled('user_id')) {
+        $query->where('user_id', $request->user_id);
+    }
+    
+    if ($request->filled('post_id')) {
+        $query->where('post_id', $request->post_id);
+    }
+    
+    if ($request->filled('date')) {
+        $query->whereDate('date', $request->date);
+    }
+    
+    if ($request->filled('start_date') && $request->filled('end_date')) {
+        $query->whereBetween('date', [$request->start_date, $request->end_date]);
+    }
+    
+    if ($request->filled('content_length')) {
+        switch ($request->content_length) {
+            case 'short':
+                $query->whereRaw('LENGTH(contenu) < 50');
+                break;
+            case 'medium':
+                $query->whereRaw('LENGTH(contenu) BETWEEN 50 AND 200');
+                break;
+            case 'long':
+                $query->whereRaw('LENGTH(contenu) > 200');
+                break;
+        }
+    }
+    
+    // Sorting
+    if ($request->filled('sort')) {
+        switch ($request->sort) {
+            case 'newest':
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'user':
+                $query->join('users', 'comments.user_id', '=', 'users.id')
+                      ->orderBy('users.name', 'asc')
+                      ->select('comments.*');
+                break;
+            case 'post':
+                $query->join('posts', 'comments.post_id', '=', 'posts.id')
+                      ->orderBy('posts.titre', 'asc')
+                      ->select('comments.*');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
+        }
+    } else {
+        $query->orderBy('created_at', 'desc');
+    }
+    
+    $comments = $query->get();
+    $users = User::all();
+    $posts = Post::all();
+    $editComment = null;
+
+    if ($request->has('edit')) {
+        $editComment = Comment::find($request->input('edit'));
+    }
+
+    return view('comments.index', compact('comments', 'users', 'posts', 'editComment'));
+}
 
     // Show create comment form
     public function create()
@@ -86,4 +149,6 @@ class CommentController extends Controller
         $comment->delete();
         return redirect()->route('comments.index')->with('success', 'Commentaire supprimé avec succès');
     }
+
+    
 }

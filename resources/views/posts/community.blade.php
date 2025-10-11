@@ -20,6 +20,29 @@
             border-top: 1px solid #e5e7eb;
             background: #f9fafb;
         }
+        .post-image-container {
+            position: relative;
+            margin: 1rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+        .post-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            display: block;
+        }
+        .image-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .post-image-container:hover .image-actions {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -34,10 +57,10 @@
             <p class="text-gray-600">Discover what everyone is sharing in our reading community</p>
         </div>
 
-        <!-- Create Post Card (Only if user wants to post in community) -->
+        <!-- Create Post Card - AVEC UPLOAD IMAGE -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
             <h2 class="text-lg font-semibold mb-4 text-gray-900">Create a Post</h2>
-            <form action="{{ route('user.posts.store') }}" method="POST">
+            <form action="{{ route('user.posts.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-4">
                     <input type="text" name="titre" required 
@@ -49,6 +72,16 @@
                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                               placeholder="Share your thoughts with the community..."></textarea>
                 </div>
+                
+                <!-- Upload Image - CORRIGÉ -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Add Image (Optional)</label>
+                    <input type="file" name="image" 
+                           accept="image/jpeg,image/png,image/jpg,image/gif"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">Formats: JPEG, PNG, JPG, GIF | Max: 2MB</p>
+                </div>
+                
                 <div class="flex justify-end">
                     <button type="submit" 
                             class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2">
@@ -59,7 +92,7 @@
             </form>
         </div>
 
-        <!-- Community Posts Feed -->
+        <!-- Community Posts Feed - AVEC IMAGES -->
         <div class="space-y-6">
             @forelse($posts as $post)
             <div class="bg-white rounded-lg shadow-sm post-card overflow-hidden">
@@ -85,10 +118,26 @@
                     </div>
                 </div>
 
-                <!-- Post Content -->
+                <!-- Post Content - AVEC IMAGE -->
                 <div class="px-6 pb-4">
                     <h4 class="text-xl font-semibold text-gray-900 mb-3">{{ $post->titre }}</h4>
-                    <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ $post->contenu }}</p>
+                    <p class="text-gray-700 leading-relaxed whitespace-pre-line mb-4">{{ $post->contenu }}</p>
+                    
+                    <!-- Composant Image - CORRIGÉ -->
+                    @if($post->image)
+                    <div class="post-image-container">
+                        <img src="{{ asset('storage/' . $post->image) }}" 
+                             alt="Post image" 
+                             class="post-image">
+                        <div class="image-actions">
+                            <button type="button" 
+                                    class="bg-white bg-opacity-90 p-2 rounded-full shadow-sm hover:bg-opacity-100 transition-all image-expand-btn"
+                                    data-image-src="{{ asset('storage/' . $post->image) }}">
+                                <i class="fas fa-expand text-gray-700"></i>
+                            </button>
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Post Stats -->
@@ -166,8 +215,49 @@
 
     </main>
 
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50 flex items-center justify-center p-4">
+        <div class="relative max-w-4xl max-h-full">
+            <button id="closeModalBtn" class="absolute -top-12 right-0 text-white text-2xl hover:text-gray-300">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="modalImage" src="" class="max-w-full max-h-screen object-contain">
+        </div>
+    </div>
+
     <script>
+        // Fonctions globales
+        function openImageModal(src) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Gestion du modal d'image
+            const imageExpandBtns = document.querySelectorAll('.image-expand-btn');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+
+            imageExpandBtns.forEach(button => {
+                button.addEventListener('click', function() {
+                    const imageSrc = this.getAttribute('data-image-src');
+                    openImageModal(imageSrc);
+                });
+            });
+
+            closeModalBtn.addEventListener('click', closeImageModal);
+
+            // Fermer modal avec ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeImageModal();
+                }
+            });
+
+            // Animation des posts
             const postCards = document.querySelectorAll('.post-card');
             postCards.forEach((card, index) => {
                 card.style.opacity = '0';

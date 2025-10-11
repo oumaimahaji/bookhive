@@ -58,13 +58,15 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('comments', CommentController::class);
 
     // User Posts & Comments Routes
-    Route::prefix('user')->group(function () {
-        // My Posts
-        Route::get('/my-posts', [UserPostController::class, 'myPosts'])->name('user.posts.my');
-        Route::post('/posts', [UserPostController::class, 'storePost'])->name('user.posts.store');
-        Route::delete('/posts/{post}', [UserPostController::class, 'deletePost'])->name('user.posts.delete');
-        Route::put('posts/{post}', [PostController::class, 'updateUserPost'])
-            ->name('user.posts.update');
+Route::prefix('user')->group(function () {
+    // My Posts
+    Route::get('/my-posts', [UserPostController::class, 'myPosts'])->name('user.posts.my');
+    Route::post('/posts', [UserPostController::class, 'storePost'])->name('user.posts.store');
+    Route::delete('/posts/{post}', [UserPostController::class, 'deletePost'])->name('user.posts.delete');
+    
+    // ✅ CORRECTION - UNE SEULE ROUTE UPDATE
+    Route::put('/posts/{post}', [UserPostController::class, 'update'])->name('user.posts.update');
+
 
         // Comments
         Route::post('/posts/{postId}/comments', [UserPostController::class, 'storeComment'])->name('user.comments.store');
@@ -268,11 +270,24 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-    // Gestion des utilisateurs
-    Route::get('/user-management', [InfoUserController::class, 'userManagement'])->name('user-management');
-    Route::get('/users/create', [InfoUserController::class, 'createUser'])->name('users.create');
-    Route::post('/users', [InfoUserController::class, 'storeUser'])->name('users.store');
-    Route::get('/users/{user}/edit', [InfoUserController::class, 'editUser'])->name('users.edit');
-    Route::put('/users/{user}', [InfoUserController::class, 'updateUser'])->name('users.update');
-    Route::delete('/users/{user}', [InfoUserController::class, 'destroyUser'])->name('users.destroy');
+// Gestion des utilisateurs - CORRIGÉ
+Route::get('/user-management', [InfoUserController::class, 'userManagement'])->name('user-management');
+Route::get('/users/create', [InfoUserController::class, 'createUser'])->name('users.create');
+Route::post('/users', [InfoUserController::class, 'storeUser'])->name('users.store');
+Route::put('/users/{user}', [InfoUserController::class, 'updateUser'])->name('users.update');
+Route::delete('/users/{user}', [InfoUserController::class, 'destroyUser'])->name('users.destroy');
+
+// PAS de route users.edit ici !
+
+
+
+    // AJOUTEZ CES ROUTES APRÈS LES ROUTES EXISTANTES DANS LE GROUPE AUTH
+Route::resource('posts', PostController::class);
+Route::resource('comments', CommentController::class);
+
+// Routes supplémentaires pour l'admin
+Route::get('/admin/posts', [PostController::class, 'index'])->name('admin.posts');
+Route::get('/admin/comments', [CommentController::class, 'index'])->name('admin.comments');
+// AJOUTEZ CETTE ROUTE APRÈS LES ROUTES POSTS EXISTANTES
+Route::get('/posts/{post}/comments', [PostController::class, 'getPostComments'])->name('posts.comments');
 });
