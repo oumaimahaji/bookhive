@@ -8,10 +8,14 @@
                 <div class="card mb-0">
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">Books Management</h6>
+<<<<<<< HEAD
                         {{-- Afficher le bouton "Add New Book" UNIQUEMENT si on n'est pas en mode édition --}}
                         @if(!request()->has('edit'))
                         <a href="{{ route('books.create') }}" class="btn btn-sm" style="background-color: #d63384; color: white; border: none;">Add New Book</a>
                         @endif
+=======
+                        <a href="{{ route('books.create') }}" class="btn btn-sm" style="background-color: #d63384; color: white; border: none;">Add New Book</a>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                     </div>
 
                     {{-- Message de succès --}}
@@ -20,6 +24,7 @@
                     @endif
 
                     <div class="card-body px-2 py-0">
+<<<<<<< HEAD
                         {{-- Afficher la liste des livres UNIQUEMENT si on n'est pas en mode édition --}}
                         @if(!request()->has('edit'))
 
@@ -70,6 +75,43 @@
                                                     <option value="50" {{ $per_page == 50 ? 'selected' : '' }}>50 per page</option>
                                                     <option value="100" {{ $per_page == 100 ? 'selected' : '' }}>100 per page</option>
                                                 </select>
+=======
+                        {{-- Afficher le formulaire de recherche et la liste UNIQUEMENT si on n'est pas en mode édition --}}
+                        @if(!isset($editBook))
+
+                        {{-- Formulaire Recherche / Filtre --}}
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <form action="{{ route('books.index') }}" method="GET">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        {{-- Search by Author --}}
+                                        <div style="flex: 1; min-width: 200px;">
+                                            <input type="text" name="author" class="form-control form-control-sm" placeholder="Search by author" value="{{ request('author') }}">
+                                        </div>
+
+                                        {{-- Category Filter --}}
+                                        <div style="flex: 1; min-width: 180px;">
+                                            <select name="category_id" class="form-control form-control-sm">
+                                                <option value="">All Categories</option>
+                                                @foreach($categories as $cat)
+                                                <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                                    {{ $cat->nom }}
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        {{-- Buttons Container --}}
+                                        <div class="d-flex gap-2" style="min-width: 230px;">
+                                            {{-- Filter Button --}}
+                                            <div style="flex: 1;">
+                                                <button type="submit" class="btn btn-sm w-100" style="background-color: #d63384; color: white; border: none; height: 31px; line-height: 1;">Filter</button>
+                                            </div>
+
+                                            {{-- Export PDF Button --}}
+                                            <div style="flex: 1;">
+                                                <a href="{{ route('books.export', request()->query()) }}" class="btn btn-sm w-100 d-flex align-items-center justify-content-center" style="background-color: #d63384; color: white; border: none; height: 31px; line-height: 1;">Export PDF</a>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                             </div>
                                         </div>
                                     </div>
@@ -77,6 +119,7 @@
                             </div>
                         </div>
 
+<<<<<<< HEAD
                         {{-- Résultats de recherche --}}
                         @if($search_query)
                         <div class="row mb-3">
@@ -102,6 +145,13 @@
                                 <thead>
                                     <tr>
                                         <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 border-0">Cover</th>
+=======
+                        {{-- Books Table --}}
+                        <div class="table-responsive mt-0">
+                            <table class="table table-sm table-hover align-items-center mb-0">
+                                <thead>
+                                    <tr>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                         <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 border-0">Title</th>
                                         <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 border-0">Author</th>
                                         <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 border-0">Category</th>
@@ -113,6 +163,7 @@
                                 <tbody>
                                     @forelse ($books as $book)
                                     <tr>
+<<<<<<< HEAD
                                         <td class="py-1">
                                             {{-- Photo miniature --}}
                                             @if($book->cover_image)
@@ -128,6 +179,9 @@
                                             @endif
                                         </td>
                                         <td class="py-1">
+=======
+                                        <td class="py-0">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                             <div class="d-flex flex-column">
                                                 <h6 class="mb-0 text-sm">{{ $book->titre }}</h6>
                                                 @if($book->description)
@@ -135,6 +189,7 @@
                                                 @endif
                                             </div>
                                         </td>
+<<<<<<< HEAD
                                         <td class="py-1">
                                             <p class="text-xs font-weight-bold mb-0">{{ $book->auteur }}</p>
                                         </td>
@@ -145,10 +200,23 @@
                                             <span class="text-xs text-secondary">{{ $book->type ?? 'N/A' }}</span>
                                         </td>
                                         <td class="align-middle text-center py-1">
+=======
+                                        <td class="py-0">
+                                            <p class="text-xs font-weight-bold mb-0">{{ $book->auteur }}</p>
+                                        </td>
+                                        <td class="align-middle text-center py-0">
+                                            <span class="text-xs text-secondary">{{ $book->category->nom ?? 'No category' }}</span>
+                                        </td>
+                                        <td class="align-middle text-center py-0">
+                                            <span class="text-xs text-secondary">{{ $book->type ?? 'N/A' }}</span>
+                                        </td>
+                                        <td class="align-middle text-center py-0">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                             <span class="badge badge-sm {{ $book->is_valid ? 'bg-gradient-success' : 'bg-gradient-secondary' }}">
                                                 {{ $book->is_valid ? 'Valid' : 'Pending' }}
                                             </span>
                                         </td>
+<<<<<<< HEAD
                                         <td class="align-middle text-center py-1">
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a href="{{ route('books.index', ['edit' => $book->id]) }}" class="btn btn-outline-info btn-xs px-2">
@@ -165,18 +233,36 @@
                                                         <i class="fas fa-download"></i>
                                                     </a>
                                                 </div>
+=======
+                                        <td class="align-middle text-center py-0">
+                                            <div class="d-flex justify-content-center gap-1">
+                                                <a href="{{ route('books.index', ['edit' => $book->id]) }}" class="btn btn-outline-info btn-xs px-1">
+                                                    Edit
+                                                </a>
+
+                                                {{-- Télécharger PDF --}}
+                                                @if($book->pdf_path)
+                                                <a href="{{ route('books.download', $book->id) }}" class="btn btn-outline-primary btn-xs px-1" target="_blank">
+                                                    PDF
+                                                </a>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                 @endif
 
                                                 <form action="{{ route('books.destroy', $book->id) }}" method="POST">
                                                     @csrf
                                                     @method('DELETE')
+<<<<<<< HEAD
                                                     <button class="btn btn-outline-danger btn-xs px-2" onclick="return confirm('Are you sure?')">Delete</button>
+=======
+                                                    <button class="btn btn-outline-danger btn-xs px-1" onclick="return confirm('Are you sure?')">Delete</button>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                 </form>
                                             </div>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
+<<<<<<< HEAD
                                         <td colspan="7" class="text-center p-3">
                                             <p class="text-muted mb-0">
                                                 @if($search_query)
@@ -185,6 +271,10 @@
                                                 No books found.
                                                 @endif
                                             </p>
+=======
+                                        <td colspan="6" class="text-center p-0">
+                                            <p class="text-muted mb-0">No books found.</p>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                         </td>
                                     </tr>
                                     @endforelse
@@ -193,6 +283,7 @@
                         </div>
 
                         {{-- Pagination --}}
+<<<<<<< HEAD
                         @if($books->hasPages())
                         <div class="row mt-4">
                             <div class="col-12">
@@ -305,13 +396,37 @@
                                         </a>
                                     </div>
                                     <div class="card-body py-2">
+=======
+                        <div class="d-flex justify-content-end mt-0">
+                            {{ $books->withQueryString()->links() }}
+                        </div>
+
+                        @endif
+
+                        {{-- Inline Edit Form --}}
+                        @if(isset($editBook))
+                        <div class="row mt-0">
+                            <div class="col-12">
+                                <div class="card border-primary">
+                                    <div class="card-header bg-primary text-white pb-1 d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 text-white">Edit Book: {{ $editBook->titre }}</h6>
+                                        <a href="{{ route('books.index') }}" class="btn btn-outline-light btn-sm">
+                                            <i class="fas fa-times me-1"></i>Close
+                                        </a>
+                                    </div>
+                                    <div class="card-body py-1" style="max-height: 400px; overflow-y: auto;">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                         <form action="{{ route('books.update', $editBook->id) }}" method="POST" enctype="multipart/form-data" id="editBookForm">
                                             @csrf
                                             @method('PUT')
 
                                             {{-- Messages d'erreur --}}
                                             @if ($errors->any())
+<<<<<<< HEAD
                                             <div class="alert alert-danger mb-3 py-2">
+=======
+                                            <div class="alert alert-danger mb-2 py-1">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                 <ul class="mb-0 mt-0 small">
                                                     @foreach ($errors->all() as $error)
                                                     <li>{{ $error }}</li>
@@ -320,12 +435,21 @@
                                             </div>
                                             @endif
 
+<<<<<<< HEAD
                                             <div class="row g-3">
                                                 {{-- Colonne gauche --}}
                                                 <div class="col-md-6">
                                                     {{-- Titre --}}
                                                     <div class="mb-2">
                                                         <label for="titre" class="form-label fw-bold small mb-1">Title <span class="text-danger">*</span></label>
+=======
+                                            <div class="row g-2">
+                                                {{-- Colonne gauche --}}
+                                                <div class="col-md-6">
+                                                    {{-- Titre --}}
+                                                    <div class="mb-1">
+                                                        <label for="titre" class="form-label fw-bold small mb-0">Title <span class="text-danger">*</span></label>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                         <input type="text" name="titre" class="form-control form-control-sm @error('titre') is-invalid @enderror"
                                                             value="{{ old('titre', $editBook->titre) }}"
                                                             maxlength="255"
@@ -336,8 +460,13 @@
                                                     </div>
 
                                                     {{-- Auteur --}}
+<<<<<<< HEAD
                                                     <div class="mb-2">
                                                         <label for="auteur" class="form-label fw-bold small mb-1">Author <span class="text-danger">*</span></label>
+=======
+                                                    <div class="mb-1">
+                                                        <label for="auteur" class="form-label fw-bold small mb-0">Author <span class="text-danger">*</span></label>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                         <input type="text" name="auteur" class="form-control form-control-sm @error('auteur') is-invalid @enderror"
                                                             value="{{ old('auteur', $editBook->auteur) }}"
                                                             maxlength="255"
@@ -348,8 +477,13 @@
                                                     </div>
 
                                                     {{-- Catégorie --}}
+<<<<<<< HEAD
                                                     <div class="mb-2">
                                                         <label for="category_id" class="form-label fw-bold small mb-1">Category <span class="text-danger">*</span></label>
+=======
+                                                    <div class="mb-1">
+                                                        <label for="category_id" class="form-label fw-bold small mb-0">Category <span class="text-danger">*</span></label>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                         <select name="category_id" class="form-control form-control-sm @error('category_id') is-invalid @enderror" required>
                                                             <option value="">-- Select Category --</option>
                                                             @foreach($categories as $cat)
@@ -364,8 +498,13 @@
                                                     </div>
 
                                                     {{-- Type --}}
+<<<<<<< HEAD
                                                     <div class="mb-2">
                                                         <label for="type" class="form-label fw-bold small mb-1">Type</label>
+=======
+                                                    <div class="mb-1">
+                                                        <label for="type" class="form-label fw-bold small mb-0">Type</label>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                         <input type="text" name="type" class="form-control form-control-sm @error('type') is-invalid @enderror"
                                                             value="{{ old('type', $editBook->type) }}"
                                                             maxlength="100">
@@ -375,8 +514,13 @@
                                                     </div>
 
                                                     {{-- Status --}}
+<<<<<<< HEAD
                                                     <div class="mb-2">
                                                         <label class="form-label fw-bold small mb-1">Status</label>
+=======
+                                                    <div class="mb-1">
+                                                        <label class="form-label fw-bold small mb-0">Status</label>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                         <div class="form-check">
                                                             <input type="checkbox" name="is_valid" value="1" class="form-check-input" id="is_valid"
                                                                 {{ old('is_valid', $editBook->is_valid) ? 'checked' : '' }}>
@@ -388,8 +532,13 @@
                                                 {{-- Colonne droite --}}
                                                 <div class="col-md-6">
                                                     {{-- Description --}}
+<<<<<<< HEAD
                                                     <div class="mb-2">
                                                         <label for="description" class="form-label fw-bold small mb-1">Description</label>
+=======
+                                                    <div class="mb-1">
+                                                        <label for="description" class="form-label fw-bold small mb-0">Description</label>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                         <textarea name="description" class="form-control form-control-sm @error('description') is-invalid @enderror"
                                                             rows="3"
                                                             maxlength="500"
@@ -400,6 +549,7 @@
                                                         @enderror
                                                     </div>
 
+<<<<<<< HEAD
                                                     {{-- Photo de couverture --}}
                                                     <div class="mb-2">
                                                         <label class="form-label fw-bold small mb-1">Cover Image</label>
@@ -425,6 +575,12 @@
                                                     @if(auth()->check() && auth()->user()->role === 'admin')
                                                     <div class="mb-2">
                                                         <label class="form-label fw-bold small mb-1">Update PDF File (admin only)</label>
+=======
+                                                    {{-- Champ PDF admin --}}
+                                                    @if(auth()->check() && auth()->user()->role === 'admin')
+                                                    <div class="mb-1">
+                                                        <label class="form-label fw-bold small mb-0">Update PDF File (admin only)</label>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                         <input type="file" name="pdf" class="form-control form-control-sm @error('pdf') is-invalid @enderror"
                                                             accept="application/pdf">
                                                         <small class="text-muted">Maximum file size: 10MB. Accepted format: PDF only.</small>
@@ -433,7 +589,11 @@
                                                         @enderror
 
                                                         @if($editBook->pdf_path)
+<<<<<<< HEAD
                                                         <div class="mt-2">
+=======
+                                                        <div class="mt-1">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                             <p class="mb-0 small">Current PDF:</p>
                                                             <a href="{{ route('books.download', $editBook->id) }}" class="btn btn-outline-primary btn-xs" target="_blank">
                                                                 <i class="fas fa-download me-1"></i>Download PDF
@@ -446,7 +606,11 @@
                                             </div>
 
                                             {{-- Boutons --}}
+<<<<<<< HEAD
                                             <div class="text-center mt-3 pt-3 border-top">
+=======
+                                            <div class="text-center mt-2 pt-2 border-top">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                                 <button type="submit" class="btn btn-sm px-3" style="background-color: #d63384; color: white; border: none;">
                                                     <i class="fas fa-save me-1"></i>Update Book
                                                 </button>
@@ -461,8 +625,11 @@
                         </div>
                         @endif
 
+<<<<<<< HEAD
                         @endif
 
+=======
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                     </div>
                 </div>
             </div>
@@ -470,6 +637,7 @@
     </div>
 </main>
 
+<<<<<<< HEAD
 @if(!request()->has('edit'))
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -507,6 +675,9 @@
 @endif
 
 @if(request()->has('edit'))
+=======
+@if(isset($editBook))
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const descriptionField = document.querySelector('textarea[name="description"]');
@@ -546,6 +717,7 @@
                     }
                 });
 
+<<<<<<< HEAD
                 // Check cover image type
                 const coverImage = form.querySelector('input[name="cover_image"]');
                 if (coverImage && coverImage.files.length > 0) {
@@ -566,6 +738,8 @@
                     }
                 }
 
+=======
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                 // Check file type if PDF is selected
                 const pdfFile = form.querySelector('input[name="pdf"]');
                 if (pdfFile && pdfFile.files.length > 0) {
@@ -590,6 +764,18 @@
                 }
             });
         }
+<<<<<<< HEAD
+=======
+
+        // Auto-scroll to the edit form when page loads
+        const editForm = document.querySelector('.card.border-primary');
+        if (editForm) {
+            editForm.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
     });
 </script>
 @endif

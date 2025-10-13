@@ -35,7 +35,11 @@
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4">
+<<<<<<< HEAD
                     <a href="#nouveautes" class="group bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center justify-center">
+=======
+                    <a href="#explorer" class="group bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center justify-center">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                         <span>Explorer la Collection</span>
                         <svg class="w-5 h-5 ml-2 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -174,6 +178,7 @@
     </div>
 </section>
 
+<<<<<<< HEAD
 <!-- Section NOUVEAUTÉS (5 derniers livres) -->
 <section id="nouveautes" class="py-20 bg-gray-50">
     <div class="container mx-auto px-6">
@@ -199,6 +204,32 @@
                     <img src="{{ asset('storage/' . $book->cover_image) }}"
                         alt="Couverture de {{ $book->titre }}"
                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+=======
+<!-- Section Livres -->
+<section id="explorer" class="py-20 bg-white">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                Découvrez nos
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">
+                    Derniers Livres
+                </span>
+            </h2>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                Une sélection des livres les plus récents de notre collection
+            </p>
+        </div>
+
+        @if($books->count() > 0)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            @foreach($books as $book)
+            <div class="group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-4 overflow-hidden border border-gray-100">
+                <!-- Image de couverture avec overlay -->
+                <div class="relative h-64 overflow-hidden">
+                    @if($book->cover_image)
+                    <img src="{{ asset('storage/' . $book->cover_image) }}" alt="{{ $book->titre }}"
+                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                     @else
                     <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
                         <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,6 +238,7 @@
                     </div>
                     @endif
 
+<<<<<<< HEAD
                     <!-- Badge Nouveau -->
                     <div class="absolute top-3 left-3">
                         <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
@@ -245,10 +277,32 @@
                         🔒 Se connecter
                     </a>
                     @endauth
+=======
+                    <!-- Overlay hover -->
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        @auth
+                        <a href="{{ route('books.show', $book->id) }}" class="bg-white text-gray-900 font-bold py-3 px-6 rounded-full transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            Voir détails
+                        </a>
+                        @else
+                        <a href="{{ route('login') }}" class="bg-white text-gray-900 font-bold py-3 px-6 rounded-full transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            Se connecter pour voir
+                        </a>
+                        @endauth
+                    </div>
+                </div>
+
+                <!-- Contenu de la carte - SEULEMENT titre, auteur et description -->
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ $book->titre }}</h3>
+                    <p class="text-gray-600 mb-3">Par {{ $book->auteur }}</p>
+                    <p class="text-gray-700 text-sm leading-relaxed line-clamp-3">{{ Str::limit($book->description, 120) }}</p>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                 </div>
             </div>
             @endforeach
         </div>
+<<<<<<< HEAD
         @else
         <div class="text-center py-12">
             <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
@@ -345,6 +399,32 @@
             <h3 class="text-xl font-bold text-gray-700 mb-2">Aucun livre disponible</h3>
             <p class="text-gray-500">Notre bibliothèque se remplit de trésors littéraires</p>
         </div>
+=======
+
+        <div class="text-center mt-12">
+            @if(Route::has('books.index'))
+            <a href="{{ route('books.index') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <span>Voir tous les livres</span>
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            </a>
+            @endif
+        </div>
+        @else
+        <!-- State empty design -->
+        <div class="text-center py-20">
+            <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
+                <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-700 mb-4">Aucun livre disponible</h3>
+            <p class="text-gray-500 max-w-md mx-auto">
+                Notre bibliothèque se remplit de trésors littéraires. Revenez bientôt pour découvrir notre collection.
+            </p>
+        </div>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
         @endif
     </div>
 </section>
@@ -386,7 +466,11 @@
             </a>
             @endguest
 
+<<<<<<< HEAD
             <a href="#nouveautes" class="group border-2 border-white text-white hover:bg-white hover:text-gray-900 font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+=======
+            <a href="#explorer" class="group border-2 border-white text-white hover:bg-white hover:text-gray-900 font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                 <span>Découvrir les nouveautés</span>
                 <svg class="w-5 h-5 ml-2 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />

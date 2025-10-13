@@ -15,8 +15,12 @@
         "laravel/socialite": "^5.23",
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.1.1",
+<<<<<<< HEAD
         "livewire/volt": "^1.7.0",
         "voku/portable-utf8": "^6.0"
+=======
+        "livewire/volt": "^1.7.0"
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

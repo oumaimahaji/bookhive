@@ -13,6 +13,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
+<<<<<<< HEAD
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">Edit Category: {{ $editCategory->nom }}</h6>
                         @php
@@ -36,10 +37,18 @@
                         @endif
 
                         <form action="{{ route('categories.update', $editCategory->id) }}" method="POST" id="editCategoryForm">
+=======
+                    <div class="card-header pb-0">
+                        <h6>Edit Category: {{ $editCategory->nom }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ route('categories.update', $editCategory->id) }}" method="POST">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                             @csrf
                             @method('PUT')
                             <div class="row">
                                 <div class="col-md-6 mb-3">
+<<<<<<< HEAD
                                     <label for="nom" class="form-label">Name <span class="text-danger">*</span></label>
                                     <input type="text" name="nom" class="form-control @error('nom') is-invalid @enderror"
                                         value="{{ old('nom', $editCategory->nom) }}"
@@ -73,12 +82,25 @@
                             <a href="{{ route('categories.index', $cancelParams) }}" class="btn btn-secondary btn-sm">
                                 <i class="fas fa-times me-1"></i>Cancel
                             </a>
+=======
+                                    <label for="nom" class="form-label">Name</label>
+                                    <input type="text" name="nom" class="form-control" value="{{ old('nom', $editCategory->nom) }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea name="description" class="form-control">{{ old('description', $editCategory->description) }}</textarea>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-sm" style="background-color: #d63384; color: white; border: none;">Update Category</button>
+                            <a href="{{ route('categories.index') }}" class="btn btn-secondary btn-sm">Cancel</a>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                         </form>
                     </div>
                 </div>
             </div>
         </div>
         @else
+<<<<<<< HEAD
         {{-- Liste des catégories avec recherche et tri --}}
         <div class="row mb-4 mt-3">
             <div class="col-12">
@@ -162,6 +184,14 @@
             </div>
         </div>
         @endif
+=======
+        {{-- Liste des catégories --}}
+        <div class="row mb-3">
+            <div class="col-12 text-end">
+                <a href="{{ route('categories.create') }}" class="btn btn-sm" style="background-color: #d63384; color: white; border: none;">Add New Category</a>
+            </div>
+        </div>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
 
         <div class="row">
             <div class="col-12">
@@ -177,8 +207,12 @@
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Number of Books</th>
+<<<<<<< HEAD
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date Added</th>
                                         <th class="text-secondary opacity-7 text-center">Actions</th>
+=======
+                                        <th class="text-secondary opacity-7"></th>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -192,6 +226,7 @@
                                             </div>
                                         </td>
                                         <td>
+<<<<<<< HEAD
                                             <p class="text-xs text-secondary mb-0">
                                                 {{ $category->description ? Str::limit($category->description, 50) : 'No description' }}
                                             </p>
@@ -216,6 +251,20 @@
                                                     <button class="btn btn-outline-danger btn-xs px-2" onclick="return confirm('Are you sure?')">Delete</button>
                                                 </form>
                                             </div>
+=======
+                                            <p class="text-xs text-secondary mb-0">{{ $category->description ?? 'No description' }}</p>
+                                        </td>
+                                        <td class="align-middle text-center text-sm">
+                                            <p class="text-xs text-secondary mb-0">{{ $category->books_count }}</p>
+                                        </td>
+                                        <td class="align-middle">
+                                            <a href="{{ route('categories.index', ['edit' => $category->id]) }}" class="text-secondary font-weight-bold text-xs">Edit</a>
+                                            <form action="{{ route('categories.destroy', $category->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="text-danger font-weight-bold text-xs border-0 bg-transparent" onclick="return confirm('Are you sure?')">Delete</button>
+                                            </form>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                         </td>
                                     </tr>
                                     @endforeach
@@ -223,6 +272,7 @@
                             </table>
 
                             @if($categories->isEmpty())
+<<<<<<< HEAD
                             <div class="text-center p-4">
                                 <p class="text-muted mb-0">
                                     @if($search_query)
@@ -232,6 +282,9 @@
                                     @endif
                                 </p>
                             </div>
+=======
+                            <p class="text-center p-3">No categories found.</p>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                             @endif
 
                         </div>
@@ -239,6 +292,7 @@
                 </div>
             </div>
         </div>
+<<<<<<< HEAD
 
         {{-- Pagination Avancée --}}
         @if($categories->hasPages())
@@ -393,4 +447,9 @@
     });
 </script>
 @endif
+=======
+        @endif
+    </div>
+</main>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
 @endsection

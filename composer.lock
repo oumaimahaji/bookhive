@@ -4,7 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
     "content-hash": "257b07da4c24e58df6b29a539074c217",
+=======
+    "content-hash": "905d171aaef24021a1ec9ec03e6aed01",
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -5365,6 +5369,7 @@
             "time": "2024-09-09T11:45:10+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "symfony/polyfill-iconv",
             "version": "v1.33.0",
             "source": {
@@ -5449,6 +5454,8 @@
             "time": "2024-09-17T14:58:18+00:00"
         },
         {
+=======
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
             "name": "symfony/polyfill-intl-grapheme",
             "version": "v1.33.0",
             "source": {
@@ -5788,6 +5795,7 @@
             "time": "2024-12-23T08:48:59+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "symfony/polyfill-php72",
             "version": "v1.31.0",
             "source": {
@@ -5853,6 +5861,8 @@
             "time": "2024-09-09T11:45:10+00:00"
         },
         {
+=======
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
             "name": "symfony/polyfill-php80",
             "version": "v1.33.0",
             "source": {
@@ -7136,6 +7146,7 @@
             "time": "2024-11-21T01:49:47+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "voku/portable-utf8",
             "version": "6.0.13",
             "source": {
@@ -7239,6 +7250,8 @@
             "time": "2023-03-08T08:35:38+00:00"
         },
         {
+=======
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
             "name": "webmozart/assert",
             "version": "1.11.0",
             "source": {

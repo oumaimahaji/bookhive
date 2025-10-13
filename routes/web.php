@@ -27,7 +27,10 @@ use App\Models\User;
 Route::get('/', [FrontendController::class, 'index'])->name('home');
 Route::get('/about', [FrontendController::class, 'about'])->name('about');
 Route::get('/contact', [FrontendController::class, 'contact'])->name('contact');
+<<<<<<< HEAD
 Route::get('/book/{book}', [FrontendController::class, 'showBook'])->name('frontend.book');
+=======
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
 
 // -------------------- ROUTES POUR LES INVITÉS --------------------
 Route::middleware(['guest'])->group(function () {
@@ -59,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('comments', CommentController::class);
 
     // User Posts & Comments Routes
+<<<<<<< HEAD
     Route::prefix('user')->group(function () {
         // My Posts
         Route::get('/my-posts', [UserPostController::class, 'myPosts'])->name('user.posts.my');
@@ -67,6 +71,16 @@ Route::middleware(['auth'])->group(function () {
 
         // ✅ CORRECTION - UNE SEULE ROUTE UPDATE
         Route::put('/posts/{post}', [UserPostController::class, 'update'])->name('user.posts.update');
+=======
+Route::prefix('user')->group(function () {
+    // My Posts
+    Route::get('/my-posts', [UserPostController::class, 'myPosts'])->name('user.posts.my');
+    Route::post('/posts', [UserPostController::class, 'storePost'])->name('user.posts.store');
+    Route::delete('/posts/{post}', [UserPostController::class, 'deletePost'])->name('user.posts.delete');
+    
+    // ✅ CORRECTION - UNE SEULE ROUTE UPDATE
+    Route::put('/posts/{post}', [UserPostController::class, 'update'])->name('user.posts.update');
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
 
 
         // Comments
@@ -271,6 +285,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 
+<<<<<<< HEAD
     // Gestion des utilisateurs - CORRIGÉ
     Route::get('/user-management', [InfoUserController::class, 'userManagement'])->name('user-management');
     Route::get('/users/create', [InfoUserController::class, 'createUser'])->name('users.create');
@@ -279,10 +294,21 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/users/{user}', [InfoUserController::class, 'destroyUser'])->name('users.destroy');
 
     // PAS de route users.edit ici !
+=======
+// Gestion des utilisateurs - CORRIGÉ
+Route::get('/user-management', [InfoUserController::class, 'userManagement'])->name('user-management');
+Route::get('/users/create', [InfoUserController::class, 'createUser'])->name('users.create');
+Route::post('/users', [InfoUserController::class, 'storeUser'])->name('users.store');
+Route::put('/users/{user}', [InfoUserController::class, 'updateUser'])->name('users.update');
+Route::delete('/users/{user}', [InfoUserController::class, 'destroyUser'])->name('users.destroy');
+
+// PAS de route users.edit ici !
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
 
 
 
     // AJOUTEZ CES ROUTES APRÈS LES ROUTES EXISTANTES DANS LE GROUPE AUTH
+<<<<<<< HEAD
     Route::resource('posts', PostController::class);
     Route::resource('comments', CommentController::class);
 
@@ -293,4 +319,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/comments', [CommentController::class, 'index'])->name('admin.comments');
     // AJOUTEZ CETTE ROUTE APRÈS LES ROUTES POSTS EXISTANTES
     Route::get('/posts/{post}/comments', [PostController::class, 'getPostComments'])->name('posts.comments');
+=======
+Route::resource('posts', PostController::class);
+Route::resource('comments', CommentController::class);
+
+// Routes supplémentaires pour l'admin
+Route::get('/admin/posts', [PostController::class, 'index'])->name('admin.posts');
+Route::get('/admin/comments', [CommentController::class, 'index'])->name('admin.comments');
+// AJOUTEZ CETTE ROUTE APRÈS LES ROUTES POSTS EXISTANTES
+Route::get('/posts/{post}/comments', [PostController::class, 'getPostComments'])->name('posts.comments');
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
 });

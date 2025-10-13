@@ -1,5 +1,8 @@
 <?php
+<<<<<<< HEAD
 
+=======
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -8,6 +11,7 @@ use App\Models\Category;
 
 class FrontendController extends Controller
 {
+<<<<<<< HEAD
     public function index()
     {
         // Les 5 DERNIERS livres pour la section "Nouveautés"
@@ -53,6 +57,22 @@ class FrontendController extends Controller
         return view('frontend.book-detail', compact('book', 'relatedBooks'));
     }
 
+=======
+        public function index()
+        {
+            $books = Book::valid()->with('category')->get();
+            $categories = Category::withCount('books')->get();
+            
+            $stats = [
+                'totalBooks' => Book::valid()->count(),
+                'totalCategories' => Category::count(),
+                'totalAuthors' => Book::valid()->distinct('auteur')->count('auteur'),
+            ];
+            
+            return view('frontend.home', compact('books', 'categories', 'stats'));
+        }
+
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
     public function about()
     {
         return view('frontend.about');
@@ -62,4 +82,8 @@ class FrontendController extends Controller
     {
         return view('frontend.contact');
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e

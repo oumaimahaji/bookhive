@@ -18,7 +18,10 @@ class Book extends Model
         'is_valid',
         'user_id',
         'pdf_path',
+<<<<<<< HEAD
         'cover_image',
+=======
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
     ];
 
 

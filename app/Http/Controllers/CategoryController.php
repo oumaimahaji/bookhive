@@ -11,6 +11,7 @@ class CategoryController extends Controller
     // Affiche la liste des catégories
     public function index(Request $request)
     {
+<<<<<<< HEAD
         $query = Category::withCount('books');
 
         // RECHERCHE AVANCÉE
@@ -44,13 +45,20 @@ class CategoryController extends Controller
         $categories = $query->paginate($per_page);
         $categories->appends($request->all());
 
+=======
+        $categories = Category::withCount('books')->get();
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
         $editCategory = null;
 
         if ($request->has('edit')) {
             $editCategory = Category::find($request->input('edit'));
         }
 
+<<<<<<< HEAD
         return view('categories.index', compact('categories', 'editCategory', 'search_query', 'per_page', 'sort_by', 'sort_order'));
+=======
+        return view('categories.index', compact('categories', 'editCategory'));
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
     }
 
     // Formulaire pour créer une catégorie
@@ -132,4 +140,8 @@ class CategoryController extends Controller
             'message' => 'Nom de catégorie disponible'
         ]);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e

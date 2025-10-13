@@ -1,6 +1,7 @@
 @extends('layouts.user_type.auth')
 
 @section('content')
+<<<<<<< HEAD
 <!-- Solution de secours pour FontAwesome -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -47,6 +48,10 @@
 </style>
 
 <div class="container-fluid py-0 fontawesome-fallback">
+=======
+
+<div class="container-fluid py-0">
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
     <div class="row">
         <div class="col-12 col-lg-8 mx-auto">
             <div class="card mb-0">
@@ -55,6 +60,10 @@
                 </div>
                 <div class="card-body px-2 pt-1 pb-1">
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                     @if ($errors->any())
                     <div class="alert alert-danger mb-1 py-1">
                         <strong>Veuillez corriger les erreurs suivantes :</strong>
@@ -66,6 +75,7 @@
                     </div>
                     @endif
 
+<<<<<<< HEAD
                     {{-- ALERTE DOUBLONS IA --}}
                     @if(isset($duplicates) && !empty($duplicates))
                     <div class="alert alert-warning mb-3">
@@ -122,18 +132,44 @@
                                     <input type="text" name="auteur" value="{{ old('auteur', $input['auteur'] ?? '') }}" class="form-control form-control-sm" placeholder="Entrez le nom de l'auteur" required>
                                 </div>
 
+=======
+                    <form action="{{ route('books.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+
+                        <div class="row">
+                            {{-- Colonne gauche --}}
+                            <div class="col-md-6">
+                                {{-- Titre --}}
+                                <div class="mb-1">
+                                    <label class="form-label fw-bold small">Titre <span class="text-danger">*</span></label>
+                                    <input type="text" name="titre" value="{{ old('titre') }}" class="form-control form-control-sm" placeholder="Entrez le titre du livre" required>
+                                </div>
+
+                                {{-- Auteur --}}
+                                <div class="mb-1">
+                                    <label class="form-label fw-bold small">Auteur <span class="text-danger">*</span></label>
+                                    <input type="text" name="auteur" value="{{ old('auteur') }}" class="form-control form-control-sm" placeholder="Entrez le nom de l'auteur" required>
+                                </div>
+
+                                {{-- Catégorie --}}
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                 <div class="mb-1">
                                     <label class="form-label fw-bold small">Catégorie <span class="text-danger">*</span></label>
                                     <select name="category_id" class="form-control form-control-sm" required>
                                         <option value="">-- Sélectionnez --</option>
                                         @foreach($categories as $category)
+<<<<<<< HEAD
                                         <option value="{{ $category->id }}" {{ (old('category_id', $input['category_id'] ?? '') == $category->id) ? 'selected' : '' }}>
                                             {{ $category->nom }}
                                         </option>
+=======
+                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->nom }}</option>
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                         @endforeach
                                     </select>
                                 </div>
 
+<<<<<<< HEAD
                                 <div class="mb-1">
                                     <label class="form-label fw-bold small">Type</label>
                                     <input type="text" name="type" value="{{ old('type', $input['type'] ?? '') }}" class="form-control form-control-sm" placeholder="Entrez le type du livre">
@@ -152,13 +188,38 @@
                                     <textarea name="description" class="form-control form-control-sm" rows="2" placeholder="Entrez la description du livre">{{ old('description', $input['description'] ?? '') }}</textarea>
                                 </div>
 
+=======
+                                {{-- Type --}}
+                                <div class="mb-1">
+                                    <label class="form-label fw-bold small">Type</label>
+                                    <input type="text" name="type" value="{{ old('type') }}" class="form-control form-control-sm" placeholder="Entrez le type du livre">
+                                </div>
+                            </div>
+
+                            {{-- Colonne droite --}}
+                            <div class="col-md-6">
+                                {{-- Description --}}
+                                <div class="mb-1">
+                                    <label class="form-label fw-bold small">Description</label>
+                                    <textarea name="description" class="form-control form-control-sm" rows="2" placeholder="Entrez la description du livre">{{ old('description') }}</textarea>
+                                </div>
+
+                                {{-- Champ PDF : visible uniquement pour l'admin --}}
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                 @if(auth()->check() && auth()->user()->role === 'admin')
                                 <div class="mb-1">
                                     <label class="form-label fw-bold small">Fichier PDF du livre</label>
                                     <input type="file" name="pdf" class="form-control form-control-sm" accept="application/pdf">
+<<<<<<< HEAD
                                     <small class="text-muted">Format accepté : PDF uniquement - Max: 10MB</small>
                                 </div>
 
+=======
+                                    <small class="text-muted">Format accepté : PDF uniquement</small>
+                                </div>
+
+                                {{-- Case pour valider --}}
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                                 <div class="form-check mb-1">
                                     <input type="checkbox" name="is_valid" value="1" class="form-check-input" id="is_valid" {{ old('is_valid') ? 'checked' : '' }}>
                                     <label class="form-check-label fw-bold small" for="is_valid">Valider le livre</label>
@@ -167,6 +228,7 @@
                             </div>
                         </div>
 
+<<<<<<< HEAD
                         {{-- ✅ Case à cocher déplacée à l'intérieur du formulaire --}}
                         @if(isset($duplicates) && !empty($duplicates))
                         <div class="mt-2">
@@ -191,6 +253,12 @@
                                 @else
                                 Ajouter le livre
                                 @endif
+=======
+                        {{-- Boutons en bas --}}
+                        <div class="text-center mt-2">
+                            <button type="submit" class="btn bg-gradient-primary btn-sm px-3">
+                                <i class="fas fa-plus me-1"></i>Ajouter le livre
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
                             </button>
                             <a href="{{ route('books.index') }}" class="btn bg-gradient-secondary btn-sm px-3 ms-1">
                                 <i class="fas fa-times me-1"></i>Annuler
@@ -203,6 +271,7 @@
         </div>
     </div>
 </div>
+<<<<<<< HEAD
 @endsection
 
 @push('scripts')
@@ -234,3 +303,7 @@
     });
 </script>
 @endpush
+=======
+
+@endsection
+>>>>>>> 542202f4aa11f6ef658af99c6362a14a0e23898e
