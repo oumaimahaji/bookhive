@@ -12,12 +12,23 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ModeratorController;
 use App\Http\Controllers\ClubManagerController;
 use App\Http\Controllers\UserController;
+<<<<<<< HEAD
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReviewController;
+=======
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\UserPostController;
+use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\NotificationController;
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
+<<<<<<< HEAD
 // -------------------- ROUTES POUR LES UTILISATEURS AUTHENTIFIÉS --------------------
 Route::middleware(['auth'])->group(function () {
 
@@ -141,6 +152,13 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/users/{user}', [InfoUserController::class, 'destroyUser'])->name('users.destroy');
 
 });
+=======
+// -------------------- ROUTES PUBLIQUES (ACCESSIBLES À TOUS) --------------------
+Route::get('/', [FrontendController::class, 'index'])->name('home');
+Route::get('/about', [FrontendController::class, 'about'])->name('about');
+Route::get('/contact', [FrontendController::class, 'contact'])->name('contact');
+Route::get('/book/{book}', [FrontendController::class, 'showBook'])->name('frontend.book');
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 
 // -------------------- ROUTES POUR LES INVITÉS --------------------
 Route::middleware(['guest'])->group(function () {
@@ -161,4 +179,164 @@ Route::middleware(['guest'])->group(function () {
     Route::get('/auth/google/callback', [SocialAuthController::class, 'googleCallback']);
     Route::get('/auth/facebook/redirect', [SocialAuthController::class, 'facebookRedirect']);
     Route::get('/auth/facebook/callback', [SocialAuthController::class, 'facebookCallback']);
+<<<<<<< HEAD
+=======
+});
+
+// -------------------- ROUTES POUR LES UTILISATEURS AUTHENTIFIÉS --------------------
+Route::middleware(['auth'])->group(function () {
+    // Home (version authentifiée)
+    Route::get('/dashboard-home', [HomeController::class, 'home'])->name('dashboard.home');
+
+    // Pages statiques
+    Route::view('billing', 'billing')->name('billing');
+    Route::view('profile', 'profile')->name('profile');
+    Route::view('rtl', 'rtl')->name('rtl');
+    Route::view('tables', 'tables')->name('tables');
+    Route::view('virtual-reality', 'virtual-reality')->name('virtual-reality');
+
+    // Gestion du profil
+    Route::post('/logout', [SessionsController::class, 'destroy'])->name('logout');
+    Route::get('/user-profile', [InfoUserController::class, 'create'])->name('user-profile.create');
+    Route::post('/user-profile', [InfoUserController::class, 'store'])->name('user-profile.store');
+    Route::post('/user-profile/password', [InfoUserController::class, 'updatePassword'])->name('user-password.update');
+
+    // Dashboard central : redirection selon rôle
+    Route::get('/dashboard', function () {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(403);
+        }
+
+        if ($user->isAdmin()) {
+            return view('dashboard');
+        } elseif ($user->isModerator()) {
+            return redirect()->route('moderator.dashboard');
+        } elseif ($user->isClubManager()) {
+            return redirect()->route('club_manager.dashboard');
+        } else {
+            return redirect()->route('user.dashboard');
+        }
+    })->name('dashboard');
+
+    // -------------------- ROUTES COMMUNES --------------------
+    // Posts et Commentaires
+    Route::resource('posts', PostController::class);
+    Route::resource('comments', CommentController::class);
+    Route::get('/posts/{post}/comments', [PostController::class, 'getPostComments'])->name('posts.comments');
+
+    // Livres et Catégories
+    Route::get('/books/export', [BookController::class, 'export'])->name('books.export');
+    Route::resource('books', BookController::class);
+    Route::resource('categories', CategoryController::class);
+    Route::post('/categories/validate', [CategoryController::class, 'validateCategory'])->name('categories.validate');
+    Route::get('/books/{book}/download', [BookController::class, 'downloadPdf'])->name('books.download');
+
+    // Réservations
+    Route::resource('reservations', ReservationController::class);
+
+    // Avis
+    Route::resource('reviews', ReviewController::class);
+
+    // Gestion des utilisateurs (Admin)
+    Route::get('/user-management', [InfoUserController::class, 'userManagement'])->name('user-management');
+    Route::get('/users/create', [InfoUserController::class, 'createUser'])->name('users.create');
+    Route::post('/users', [InfoUserController::class, 'storeUser'])->name('users.store');
+    Route::put('/users/{user}', [InfoUserController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{user}', [InfoUserController::class, 'destroyUser'])->name('users.destroy');
+
+    // Routes supplémentaires pour l'admin
+    Route::get('/admin/posts', [PostController::class, 'index'])->name('admin.posts');
+    Route::get('/admin/comments', [CommentController::class, 'index'])->name('admin.comments');
+
+    // -------------------- ROUTES UTILISATEUR STANDARD --------------------
+    Route::prefix('user')->middleware(['auth'])->group(function () {
+        // Dashboard
+        Route::get('dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
+        
+        // Livres
+        Route::get('books', [UserController::class, 'books'])->name('user.books');
+        
+        // Clubs
+        Route::get('clubs', [UserController::class, 'clubs'])->name('user.clubs');
+        Route::post('clubs/{clubId}/join', [UserController::class, 'joinClub'])->name('user.clubs.join');
+        
+        // Profil
+        Route::get('profile', [UserController::class, 'profile'])->name('user.profile');
+        Route::post('profile', [UserController::class, 'updateProfile'])->name('user.profile.update');
+        Route::post('password', [UserController::class, 'updatePassword'])->name('user.password.update');
+        
+        // Posts utilisateur
+        Route::get('my-posts', [UserPostController::class, 'myPosts'])->name('user.posts.my');
+        Route::post('posts', [UserPostController::class, 'storePost'])->name('user.posts.store');
+        Route::delete('posts/{post}', [UserPostController::class, 'deletePost'])->name('user.posts.delete');
+        Route::put('posts/{post}', [UserPostController::class, 'update'])->name('user.posts.update');
+        
+        // Commentaires utilisateur
+        Route::post('posts/{postId}/comments', [UserPostController::class, 'storeComment'])->name('user.comments.store');
+        Route::delete('comments/{comment}', [UserPostController::class, 'deleteComment'])->name('user.comments.delete');
+        
+        // Posts communautaires
+        Route::get('community-posts', [UserPostController::class, 'communityPosts'])->name('user.posts.community');
+        
+        // Activité récente
+        Route::get('recent-activity', [UserController::class, 'getRecentActivity'])->name('user.recent-activity');
+        
+        // Notifications
+        Route::get('notifications', [UserController::class, 'notifications'])->name('user.notifications');
+        Route::post('notifications/{id}/read', [UserController::class, 'markNotificationAsRead'])->name('user.notifications.read');
+    });
+
+    // -------------------- ROUTES MODÉRATEUR --------------------
+    Route::prefix('moderator')->middleware(['auth'])->group(function () {
+        // Dashboard
+        Route::get('dashboard', [ModeratorController::class, 'dashboard'])->name('moderator.dashboard');
+        
+        // Gestion des livres
+        Route::get('books', [ModeratorController::class, 'books'])->name('moderator.books');
+        Route::patch('books/validate/{id}', [ModeratorController::class, 'validateBook'])->name('moderator.books.validate');
+        
+        // Profil
+        Route::get('profile', [ModeratorController::class, 'profile'])->name('moderator.profile');
+        Route::post('profile', [ModeratorController::class, 'updateProfile'])->name('moderator.profile.update');
+        Route::post('password', [ModeratorController::class, 'updatePassword'])->name('moderator.password.update');
+    });
+
+    // -------------------- ROUTES CLUB MANAGER --------------------
+    Route::prefix('club-manager')->middleware(['auth'])->group(function () {
+        // Dashboard
+        Route::get('dashboard', [ClubManagerController::class, 'dashboard'])->name('club_manager.dashboard');
+
+        // Clubs CRUD
+        Route::get('clubs', [ClubManagerController::class, 'indexClub'])->name('club_manager.clubs.index');
+        Route::post('clubs', [ClubManagerController::class, 'storeClub'])->name('club_manager.clubs.store');
+        Route::get('clubs/{id}/edit', [ClubManagerController::class, 'editClub'])->name('club_manager.clubs.edit');
+        Route::put('clubs/{id}', [ClubManagerController::class, 'updateClub'])->name('club_manager.clubs.update');
+        Route::delete('clubs/{id}', [ClubManagerController::class, 'destroyClub'])->name('club_manager.clubs.destroy');
+
+        // Events CRUD
+        Route::get('events', [ClubManagerController::class, 'indexEvent'])->name('club_manager.events.index');
+        Route::get('events/create', [ClubManagerController::class, 'createEvent'])->name('club_manager.events.create');
+        Route::post('events', [ClubManagerController::class, 'storeEvent'])->name('club_manager.events.store');
+        Route::get('events/{id}/edit', [ClubManagerController::class, 'editEvent'])->name('club_manager.events.edit');
+        Route::put('events/{id}', [ClubManagerController::class, 'updateEvent'])->name('club_manager.events.update');
+        Route::delete('events/{id}', [ClubManagerController::class, 'destroyEvent'])->name('club_manager.events.destroy');
+
+        // Événements d'un club spécifique
+        Route::get('clubs/{clubId}/events', [ClubManagerController::class, 'showClubEvents'])->name('club_manager.clubs.events');
+
+        // Profil
+        Route::get('profile', [ClubManagerController::class, 'profile'])->name('club_manager.profile');
+        Route::post('profile', [ClubManagerController::class, 'updateProfile'])->name('club_manager.profile.update');
+        Route::post('password', [ClubManagerController::class, 'updatePassword'])->name('club_manager.password.update');
+
+        // Notifications
+        Route::get('notifications', [NotificationController::class, 'index'])->name('club_manager.notifications.index');
+        Route::post('notifications/{id}/accept', [NotificationController::class, 'accept'])->name('club_manager.notifications.accept');
+        Route::post('notifications/{id}/reject', [NotificationController::class, 'reject'])->name('club_manager.notifications.reject');
+        Route::delete('notifications/{id}', [NotificationController::class, 'destroy'])->name('club_manager.notifications.destroy');
+    });
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 });

@@ -18,6 +18,7 @@
                 </a>
             </li>
 
+<<<<<<< HEAD
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Gestion des Clubs</h6>
             </li>
@@ -35,6 +36,19 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ (Request::is('club-manager/clubs/*/events') ? 'active' : '') }}" href="{{ route('club_manager.dashboard') }}">
+=======
+            <li class="nav-item">
+                <a class="nav-link {{ (Request::is('club-manager/clubs*') ? 'active' : '') }}" href="{{ route('club_manager.clubs.index') }}">
+                    <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fas fa-users text-dark"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Mes Clubs</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ (Request::is('club-manager/events*') ? 'active' : '') }}" href="{{ route('club_manager.events.index') }}">
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                     <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fas fa-calendar-alt text-dark"></i>
                     </div>
@@ -42,9 +56,22 @@
                 </a>
             </li>
 
+<<<<<<< HEAD
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Compte</h6>
             </li>
+=======
+            <li class="nav-item">
+    <a class="nav-link {{ Route::is('club_manager.notifications.*') ? 'active' : '' }}" 
+       href="{{ route('club_manager.notifications.index') }}">
+        <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="fas fa-bell text-dark text-lg opacity-10"></i>
+        </div>
+        <span class="nav-link-text ms-1"> Mes Notifications</span>
+    </a>
+</li>
+
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
             <li class="nav-item">
                 <a class="nav-link {{ (Request::is('profile') ? 'active' : '') }}" href="{{ route('profile') }}">
                     <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">

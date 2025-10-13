@@ -10,6 +10,7 @@
             </div>
         </div>
 
+<<<<<<< HEAD
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">
@@ -22,6 +23,22 @@
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
+=======
+        {{-- Affichage des erreurs --}}
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
+        {{-- Message de succès --}}
+        @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         @endif
 
         <div class="row">
@@ -31,7 +48,12 @@
                         <h6>Edit Book</h6>
                     </div>
                     <div class="card-body px-4 pt-3 pb-3">
+<<<<<<< HEAD
                         <form action="{{ route('books.update', $book->id) }}" method="POST">
+=======
+                        {{-- Formulaire de modification --}}
+                        <form action="{{ route('books.update', $book->id) }}" method="POST" enctype="multipart/form-data">
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                             @csrf
                             @method('PUT')
 
@@ -55,9 +77,15 @@
                                 <select name="category_id" class="form-control" required>
                                     <option value="">-- Sélectionnez --</option>
                                     @foreach($categories as $category)
+<<<<<<< HEAD
                                         <option value="{{ $category->id }}" {{ (old('category_id', $book->category_id) == $category->id) ? 'selected' : '' }}>
                                             {{ $category->nom }}
                                         </option>
+=======
+                                    <option value="{{ $category->id }}" {{ (old('category_id', $book->category_id) == $category->id) ? 'selected' : '' }}>
+                                        {{ $category->nom }}
+                                    </option>
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                     @endforeach
                                 </select>
                             </div>
@@ -72,6 +100,22 @@
                                 <label class="form-check-label">Valider le livre</label>
                             </div>
 
+<<<<<<< HEAD
+=======
+                            {{-- Champ PDF pour admin --}}
+                            @if(auth()->check() && auth()->user()->role === 'admin')
+                            <div class="mb-3">
+                                <label class="form-label">PDF du livre (admin only)</label>
+                                <input type="file" name="pdf" class="form-control" accept="application/pdf">
+                                @if($book->pdf_path)
+                                <p class="mt-2">PDF actuel :
+                                    <a href="{{ route('books.download', $book->id) }}" target="_blank">Voir / Télécharger</a>
+                                </p>
+                                @endif
+                            </div>
+                            @endif
+
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                             <div class="d-flex justify-content-end">
                                 <button type="submit" class="btn btn-primary">Update Book</button>
                             </div>
@@ -83,4 +127,8 @@
 
     </div>
 </main>
+<<<<<<< HEAD
 @endsection
+=======
+@endsection
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)

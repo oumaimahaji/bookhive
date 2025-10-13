@@ -4,10 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+<<<<<<< HEAD
+=======
+use Illuminate\Support\Facades\Validator;
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 
 class CategoryController extends Controller
 {
     // Affiche la liste des catégories
+<<<<<<< HEAD
    public function index(Request $request)
 {
     $categories = Category::withCount('books')->get();
@@ -20,6 +25,52 @@ class CategoryController extends Controller
     return view('categories.index', compact('categories', 'editCategory'));
 }
 
+=======
+    public function index(Request $request)
+    {
+        $query = Category::withCount('books');
+
+        // RECHERCHE AVANCÉE
+        $search_query = $request->get('search', '');
+        if ($search_query) {
+            $query->where(function($q) use ($search_query) {
+                $q->where('nom', 'like', "%{$search_query}%")
+                  ->orWhere('description', 'like', "%{$search_query}%");
+            });
+        }
+
+        // TRI AVANCÉ
+        $sort_by = $request->get('sort_by', 'nom');
+        $sort_order = $request->get('sort_order', 'asc');
+        
+        // Validation des colonnes de tri
+        $allowed_sort_columns = ['nom', 'books_count', 'created_at'];
+        if (in_array($sort_by, $allowed_sort_columns)) {
+            $query->orderBy($sort_by, $sort_order);
+        } else {
+            $query->orderBy('nom', 'asc');
+        }
+
+        // PAGINATION AVANCÉE
+        $per_page = $request->get('per_page', 10);
+        $allowed_per_page = [5, 10, 25, 50, 100];
+        if (!in_array($per_page, $allowed_per_page)) {
+            $per_page = 10;
+        }
+
+        $categories = $query->paginate($per_page);
+        $categories->appends($request->all());
+
+        $editCategory = null;
+
+        if ($request->has('edit')) {
+            $editCategory = Category::find($request->input('edit'));
+        }
+
+        return view('categories.index', compact('categories', 'editCategory', 'search_query', 'per_page', 'sort_by', 'sort_order'));
+    }
+
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
     // Formulaire pour créer une catégorie
     public function create()
     {
@@ -65,4 +116,42 @@ class CategoryController extends Controller
 
         return redirect()->route('categories.index')->with('success', 'Catégorie supprimée avec succès');
     }
+<<<<<<< HEAD
 }
+=======
+
+    // ✅ NOUVELLE API : Validation en temps réel
+    public function validateCategory(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'nom' => [
+                'required',
+                'max:255',
+                'unique:categories,nom',
+                function ($attribute, $value, $fail) {
+                    // Vérifier les noms similaires (insensible à la casse)
+                    $similarCategories = Category::whereRaw('LOWER(nom) LIKE ?', ['%' . strtolower($value) . '%'])
+                        ->orWhereRaw('LOWER(nom) LIKE ?', ['%' . strtolower(str_replace(' ', '', $value)) . '%'])
+                        ->exists();
+
+                    if ($similarCategories) {
+                        $fail('Une catégorie similaire existe déjà. Vérifiez avant de créer.');
+                    }
+                }
+            ]
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'valid' => false,
+                'errors' => $validator->errors()
+            ]);
+        }
+
+        return response()->json([
+            'valid' => true,
+            'message' => 'Nom de catégorie disponible'
+        ]);
+    }
+}
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)

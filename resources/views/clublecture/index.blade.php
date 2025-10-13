@@ -4,15 +4,77 @@
 <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ">
     <div class="container-fluid py-4">
         <div class="row mb-3">
+<<<<<<< HEAD
             <div class="col-12 text-end">
                 <a href="{{ route('club_manager.clubs.create') }}" class="btn btn-primary">Ajouter un Club</a>
+=======
+            <div class="col-6">
+                <h4>Mes Clubs de Lecture</h4>
+            </div>
+            <div class="col-6 text-end">
+                <button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#createClubForm">
+                    Ajouter un Club
+                </button>
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
             </div>
         </div>
 
         @if(session('success'))
+<<<<<<< HEAD
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
+=======
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        {{-- Formulaire de création --}}
+        <div class="row mb-4 collapse" id="createClubForm">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <h6>Créer un Nouveau Club</h6>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ route('club_manager.clubs.store') }}" method="POST">
+                            @csrf
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="nom" class="form-label">Nom du Club <span class="text-danger">*</span></label>
+                                    <input type="text" name="nom" class="form-control" value="{{ old('nom') }}" required>
+                                    @error('nom')
+                                        <div class="text-danger text-sm">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="createur_id" class="form-label">Créateur <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" value="{{ Auth::user()->name }}" readonly>
+                                    <input type="hidden" name="createur_id" value="{{ Auth::id() }}">
+                                    <small class="text-muted">Le club sera automatiquement associé à votre compte</small>
+                                    @error('createur_id')
+                                        <div class="text-danger text-sm">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                    <textarea name="description" class="form-control" rows="4" required>{{ old('description') }}</textarea>
+                                    @error('description')
+                                        <div class="text-danger text-sm">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success">Créer le Club</button>
+                            <button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#createClubForm">Annuler</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         {{-- Formulaire d'édition inline --}}
         @if(isset($editClub))
         <div class="row mb-4">
@@ -29,6 +91,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label for="nom" class="form-label">Nom du Club</label>
                                     <input type="text" name="nom" class="form-control" value="{{ old('nom', $editClub->nom) }}" required>
+<<<<<<< HEAD
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="createur_id" class="form-label">Créateur</label>
@@ -43,6 +106,27 @@
                                 <div class="col-12 mb-3">
                                     <label for="description" class="form-label">Description</label>
                                     <textarea name="description" class="form-control" rows="4">{{ old('description', $editClub->description) }}</textarea>
+=======
+                                    @error('nom')
+                                        <div class="text-danger text-sm">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="createur_id" class="form-label">Créateur</label>
+                                    <input type="text" class="form-control" value="{{ Auth::user()->name }}" readonly>
+                                    <input type="hidden" name="createur_id" value="{{ Auth::id() }}">
+                                    <small class="text-muted">Le club reste associé à votre compte</small>
+                                    @error('createur_id')
+                                        <div class="text-danger text-sm">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea name="description" class="form-control" rows="4" required>{{ old('description', $editClub->description) }}</textarea>
+                                    @error('description')
+                                        <div class="text-danger text-sm">{{ $message }}</div>
+                                    @enderror
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-success">Modifier le Club</button>
@@ -70,7 +154,11 @@
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Créateur</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Événements</th>
+<<<<<<< HEAD
                                         <th class="text-secondary opacity-7">Actions</th>
+=======
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -94,6 +182,7 @@
                                                 {{ $club->evenements_count ?? $club->evenements->count() }}
                                             </span>
                                         </td>
+<<<<<<< HEAD
                                         <td class="align-middle">
                                             <a href="{{ route('club_manager.clubs.index', ['edit' => $club->id]) }}"
                                                class="text-secondary font-weight-bold text-xs me-2">Modifier</a>
@@ -104,6 +193,31 @@
                                                 @method('DELETE')
                                                 <button class="text-danger font-weight-bold text-xs border-0 bg-transparent" onclick="return confirm('Êtes-vous sûr?')">Supprimer</button>
                                             </form>
+=======
+                                        <td class="align-middle text-center">
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ route('club_manager.clubs.index', ['edit' => $club->id]) }}"
+                                                   class="btn btn-outline-primary btn-sm mx-1"
+                                                   data-bs-toggle="tooltip" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ route('club_manager.events.index') }}?club_id={{ $club->id }}"
+                                                   class="btn btn-outline-info btn-sm mx-1"
+                                                   data-bs-toggle="tooltip" title="Voir les Événements">
+                                                    <i class="fas fa-calendar"></i>
+                                                </a>
+                                                <form action="{{ route('club_manager.clubs.destroy', $club->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            class="btn btn-outline-danger btn-sm mx-1"
+                                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce club?')"
+                                                            data-bs-toggle="tooltip" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                         </td>
                                     </tr>
                                     @empty
@@ -120,4 +234,26 @@
         </div>
     </div>
 </main>
+<<<<<<< HEAD
 @endsection
+=======
+@endsection
+
+@push('scripts')
+<script>
+    // Activer les tooltips Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Ouvrir automatiquement le formulaire de création s'il y a des erreurs de validation
+    @if($errors->any() && !isset($editClub))
+        document.addEventListener('DOMContentLoaded', function() {
+            var createForm = new bootstrap.Collapse(document.getElementById('createClubForm'));
+            createForm.show();
+        });
+    @endif
+</script>
+@endpush
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)

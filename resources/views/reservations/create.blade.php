@@ -71,6 +71,34 @@
                         <button type="submit" class="btn bg-gradient-primary">Créer la Réservation</button>
                     </form>
 
+<<<<<<< HEAD
+=======
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const form = document.querySelector('form[action="{{ route('reservations.store') }}"]');
+                            const reservationDate = form.querySelector('input[name="date_reservation"]');
+                            const returnDate = form.querySelector('input[name="date_retour_prev"]');
+                            const submitButton = form.querySelector('button[type="submit"]');
+
+                            function validateDates() {
+                                const resDate = new Date(reservationDate.value);
+                                const retDate = new Date(returnDate.value);
+                                if (resDate >= retDate) {
+                                    alert('La date de retour prévue doit être après la date de réservation.');
+                                    return false;
+                                }
+                                return true;
+                            }
+
+                            form.addEventListener('submit', function(e) {
+                                if (!validateDates()) {
+                                    e.preventDefault();
+                                }
+                            });
+                        });
+                    </script>
+
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                 </div>
             </div>
         </div>

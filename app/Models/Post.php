@@ -9,7 +9,11 @@ class Post extends Model
 {
     use HasFactory;
 
+<<<<<<< HEAD
     protected $fillable = ['user_id', 'titre', 'contenu', 'date'];
+=======
+    protected $fillable = ['user_id', 'titre', 'contenu', 'date', 'image'];
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 
     public function user()
     {

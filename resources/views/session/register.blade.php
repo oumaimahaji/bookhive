@@ -1,5 +1,9 @@
 @extends('layouts.user_type.guest')
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 @section('content')
 
   <section class="min-vh-100 mb-8">

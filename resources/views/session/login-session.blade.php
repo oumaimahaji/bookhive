@@ -11,10 +11,13 @@
               <div class="card card-plain mt-8">
                 <div class="card-header pb-0 text-left bg-transparent">
                   <h3 class="font-weight-bolder text-info text-gradient">Welcome back</h3>
+<<<<<<< HEAD
                   <p class="mb-0">Create a new acount<br></p>
                   <p class="mb-0">OR Sign in with these credentials:</p>
                   <p class="mb-0">Email <b>admin@softui.com</b></p>
                   <p class="mb-0">Password <b>secret</b></p>
+=======
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                 </div>
                 <div class="card-body">
                   <form role="form" method="POST" action="/session">

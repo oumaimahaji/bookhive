@@ -81,6 +81,40 @@
                         @endif
                     </form>
 
+<<<<<<< HEAD
+=======
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const form = document.querySelector('form[action="{{ route('reviews.store') }}"]');
+                            const bookSelect = form.querySelector('select[name="book_id"]');
+                            const noteSelect = form.querySelector('select[name="note"]');
+                            const commentaireTextarea = form.querySelector('textarea[name="commentaire"]');
+
+                            function validateForm() {
+                                if (!bookSelect.value) {
+                                    alert('Veuillez sélectionner un livre.');
+                                    return false;
+                                }
+                                if (!noteSelect.value) {
+                                    alert('Veuillez sélectionner une note.');
+                                    return false;
+                                }
+                                if (!commentaireTextarea.value.trim()) {
+                                    alert('Veuillez entrer un commentaire.');
+                                    return false;
+                                }
+                                return true;
+                            }
+
+                            form.addEventListener('submit', function(e) {
+                                if (!validateForm()) {
+                                    e.preventDefault();
+                                }
+                            });
+                        });
+                    </script>
+
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                 </div>
             </div>
         </div>

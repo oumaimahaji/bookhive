@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('guest')
+<<<<<<< HEAD
     @if(\Request::is('login/forgot-password')) 
         @include('layouts.navbars.guest.nav')
         @yield('content') 
@@ -13,6 +14,15 @@
             </div>
         </div>
         @yield('content')        
+=======
+    @if(!\Request::is('login') && !\Request::is('register'))
+        @include('layouts.navbars.main-navbar')
+    @endif
+    
+    @yield('content')
+    
+    @if(!\Request::is('login') && !\Request::is('register'))
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         @include('layouts.footers.guest.footer')
     @endif
 @endsection

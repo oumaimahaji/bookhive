@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
 @section('auth')
+<<<<<<< HEAD
+=======
+    @include('layouts.navbars.main-navbar')
+    
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
     @if(\Request::is('static-sign-up')) 
         @include('layouts.navbars.guest.nav')
         @yield('content')
@@ -8,7 +13,11 @@
     
     @elseif (\Request::is('static-sign-in')) 
         @include('layouts.navbars.guest.nav')
+<<<<<<< HEAD
             @yield('content')
+=======
+        @yield('content')
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         @include('layouts.footers.guest.footer')
     
     @else
@@ -39,22 +48,70 @@
             </div>
             @include('layouts.footers.auth.footer')
 
+<<<<<<< HEAD
         {{-- ✅ NOUVELLE CONDITION POUR LE MODERATOR --}}
         @elseif (\Request::is('moderator/*') || \Request::is('dashboard/moderator'))
             @include('layouts.navbars.auth.sidebar_moderator')
             <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg {{ (Request::is('rtl') ? 'overflow-hidden' : '') }}">
                 @include('layouts.navbars.auth.nav')
                 <div class="container-fluid py-4">
+=======
+        {{-- Dashboard Moderator --}}
+        @elseif (\Request::is('moderator/*') || \Request::is('dashboard/moderator'))
+            @include('layouts.navbars.auth.sidebar_moderator')
+            <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg {{ (Request::is('rtl') ? 'overflow-hidden' : '') }}">
+                <div class="container-fluid py-4" style="margin-top: 80px;">
+                    @yield('content')
+                    @include('layouts.footers.auth.footer')
+                </div>
+            </main>
+
+        {{-- AJOUTEZ CETTE CONDITION POUR LES PAGES USER MANAGEMENT --}}
+        @elseif (\Request::is('users/*/edit') || \Request::is('user-management') || \Request::is('users/create'))
+            {{-- Dashboards par défaut (Admin, User, Club Manager) --}}
+            @if(auth()->check())
+                @if(auth()->user()->role === 'admin')
+                    @include('layouts.navbars.auth.sidebar')
+                @elseif(auth()->user()->role === 'moderator')
+                    @include('layouts.navbars.auth.sidebar_moderator')
+                @elseif(auth()->user()->role === 'club_manager')
+                    @include('layouts.navbars.auth.sidebar_clubmanager')
+                @else
+                    @include('layouts.navbars.auth.sidebar-user')
+                @endif
+            @endif
+
+            <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg {{ (Request::is('rtl') ? 'overflow-hidden' : '') }}">
+                <div class="container-fluid py-4" style="margin-top: 80px;">
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                     @yield('content')
                     @include('layouts.footers.auth.footer')
                 </div>
             </main>
 
         @else
+<<<<<<< HEAD
             @include('layouts.navbars.auth.sidebar')
             <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg {{ (Request::is('rtl') ? 'overflow-hidden' : '') }}">
                 @include('layouts.navbars.auth.nav')
                 <div class="container-fluid py-4">
+=======
+            {{-- Dashboards par défaut (Admin, User, Club Manager) --}}
+            @if(auth()->check())
+                @if(auth()->user()->role === 'admin')
+                    @include('layouts.navbars.auth.sidebar')
+                @elseif(auth()->user()->role === 'moderator')
+                    @include('layouts.navbars.auth.sidebar_moderator')
+                @elseif(auth()->user()->role === 'club_manager')
+                    @include('layouts.navbars.auth.sidebar_clubmanager')
+                @else
+                    @include('layouts.navbars.auth.sidebar-user')
+                @endif
+            @endif
+
+            <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg {{ (Request::is('rtl') ? 'overflow-hidden' : '') }}">
+                <div class="container-fluid py-4" style="margin-top: 80px;">
+>>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                     @yield('content')
                     @include('layouts.footers.auth.footer')
                 </div>
