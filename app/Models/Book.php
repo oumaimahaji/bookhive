@@ -14,7 +14,7 @@ class Book extends Model
         'auteur',
         'description',
         'category_id',
-        'type',
+        
         'is_valid',
         'user_id',
         'pdf_path',

@@ -31,7 +31,7 @@
                 <th>Title</th>
                 <th>Author</th>
                 <th>Category</th>
-                <th>Type</th>
+               
                 <th>Status</th>
             </tr>
         </thead>
@@ -41,7 +41,7 @@
                 <td>{{ $book->titre }}</td>
                 <td>{{ $book->auteur }}</td>
                 <td>{{ $book->category->nom ?? '-' }}</td>
-                <td>{{ $book->type ?? '-' }}</td>
+               
                 <td>{{ $book->is_valid ? 'Valid' : 'Pending' }}</td>
             </tr>
             @endforeach
