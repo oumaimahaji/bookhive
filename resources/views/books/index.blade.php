@@ -91,16 +91,6 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="type" class="form-label">Type</label>
-                                    <input type="text" name="type" class="form-control @error('type') is-invalid @enderror"
-                                        value="{{ old('type', $editBook->type) }}"
-                                        maxlength="100"
-                                        placeholder="Enter book type">
-                                    @error('type')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
                                 <div class="col-md-12 mb-3">
                                     <label for="description" class="form-label">Description</label>
                                     <textarea name="description" class="form-control @error('description') is-invalid @enderror"
@@ -289,7 +279,6 @@
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Title</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Author</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Category</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
                                     </tr>
@@ -343,9 +332,6 @@
                                         </td>
                                         <td class="align-middle text-center text-sm">
                                             <span class="text-xs text-secondary">{{ $book->category->nom ?? 'No category' }}</span>
-                                        </td>
-                                        <td class="align-middle text-center text-sm">
-                                            <span class="text-xs text-secondary">{{ $book->type ?? 'N/A' }}</span>
                                         </td>
                                         <td class="align-middle text-center text-sm">
                                             <span class="badge badge-sm {{ $book->is_valid ? 'bg-gradient-success' : 'bg-gradient-secondary' }}">

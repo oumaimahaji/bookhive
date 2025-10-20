@@ -7,16 +7,16 @@
         <div class="col-12 col-lg-8 mx-auto">
             <div class="card mb-0">
                 <div class="card-header pb-0 text-center" style="background: #d63384; color: white;">
-                    <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Add New Book</h5>
+                    <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Ajouter un Nouveau Livre</h5>
                 </div>
                 <div class="card-body px-2 pt-1 pb-1">
 
-                    {{-- ERROR DISPLAY --}}
+                    {{-- AFFICHAGE DES ERREURS --}}
                     @if ($errors->any())
                     <div class="alert alert-danger alert-dismissible fade show mb-2 py-1" role="alert">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong class="small">Please correct the following errors:</strong>
+                            <strong class="small">Veuillez corriger les erreurs suivantes :</strong>
                         </div>
                         <ul class="mb-0 mt-1 small" style="margin-left: 1rem;">
                             @foreach ($errors->all() as $error)
@@ -27,14 +27,56 @@
                     </div>
                     @endif
 
-                    {{-- AI DUPLICATES ALERT --}}
+                    {{-- ALERTE RECOMMANDATIONS IA --}}
+                    @if(isset($aiData) && ($aiData['success'] ?? false))
+                    <div class="alert alert-info mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-robot me-2 fs-5"></i>
+                            <h6 class="mb-0 fw-bold">Recommandations IA Appliquées Automatiquement</h6>
+                        </div>
+                        <p class="small mb-2 mt-1">Notre IA a analysé votre titre de livre et a automatiquement :</p>
+
+                        @if(isset($aiData['recommended_category']))
+                        <div class="card mb-2 border-info">
+                            <div class="card-body py-2">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 class="mb-1">✅ Catégorie Recommandée Appliquée</h6>
+                                        <p class="small mb-1">
+                                            <strong>{{ $aiData['recommended_category']['nom'] }}</strong>
+                                            @if(isset($aiData['recommended_category']['description']))
+                                            <br><small class="text-muted">{{ $aiData['recommended_category']['description'] }}</small>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <div class="card border-info">
+                            <div class="card-body py-2">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 class="mb-1">✅ Description Générée Appliquée</h6>
+                                        <p class="small mb-1 text-muted">
+                                            {{ $aiData['generated_description'] ?? '' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- ALERTE DOUBLONS IA --}}
                     @if(isset($duplicates) && !empty($duplicates))
                     <div class="alert alert-warning mb-3">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-robot me-2 fs-5"></i>
-                            <h6 class="mb-0 fw-bold">AI - Potential Duplicates Detected</h6>
+                            <h6 class="mb-0 fw-bold">IA - Doublons Potentiels Détectés</h6>
                         </div>
-                        <p class="small mb-2 mt-1">Our artificial intelligence has detected similar books:</p>
+                        <p class="small mb-2 mt-1">Notre intelligence artificielle a détecté des livres similaires :</p>
 
                         @foreach($duplicates as $duplicate)
                         <div class="card mb-2 border-warning">
@@ -43,9 +85,9 @@
                                     <div class="col-8">
                                         <h6 class="mb-1">{{ $duplicate['book']->titre }}</h6>
                                         <p class="small mb-1 text-muted">
-                                            <strong>Author:</strong> {{ $duplicate['book']->auteur }}
+                                            <strong>Auteur :</strong> {{ $duplicate['book']->auteur }}
                                             @if($duplicate['book']->category)
-                                            | <strong>Category:</strong> {{ $duplicate['book']->category->nom }}
+                                            | <strong>Catégorie :</strong> {{ $duplicate['book']->category->nom }}
                                             @endif
                                         </p>
                                         <div class="small">
@@ -58,7 +100,7 @@
                                         <div class="fs-5 fw-bold text-danger">
                                             {{ $duplicate['score'] }}%
                                         </div>
-                                        <small class="text-muted">Similarity score</small>
+                                        <small class="text-muted">Score de similarité</small>
                                     </div>
                                 </div>
                             </div>
@@ -67,47 +109,49 @@
                     </div>
                     @endif
 
-                    {{-- CREATION FORM --}}
+                    {{-- FORMULAIRE DE CRÉATION --}}
                     <form action="{{ route('books.store') }}" method="POST" enctype="multipart/form-data" id="bookForm">
                         @csrf
 
                         <div class="row">
-                            {{-- Left column --}}
+                            {{-- Colonne gauche --}}
                             <div class="col-md-6">
-                                {{-- Title --}}
+                                {{-- Titre avec détection automatique IA --}}
                                 <div class="mb-2">
-                                    <label class="form-label fw-bold small">Title <span class="text-danger">*</span></label>
+                                    <label class="form-label fw-bold small">Titre <span class="text-danger">*</span></label>
                                     <input type="text" name="titre" value="{{ old('titre', $input['titre'] ?? '') }}"
                                         class="form-control form-control-sm @error('titre') is-invalid @enderror"
-                                        placeholder="Enter book title"
+                                        placeholder="Entrez le titre du livre"
                                         required
                                         maxlength="255"
-                                        id="bookTitle">
+                                        id="bookTitle"
+                                        onblur="getAIRecommendationsAuto()">
                                     @error('titre')
                                     <div class="invalid-feedback small">{{ $message }}</div>
                                     @enderror
-                                    <small class="form-text text-muted small">Maximum 255 characters</small>
+                                    <small class="form-text text-muted small">Maximum 255 caractères - L'IA analysera automatiquement le titre</small>
                                 </div>
 
-                                {{-- Author --}}
+                                {{-- Auteur --}}
                                 <div class="mb-2">
-                                    <label class="form-label fw-bold small">Author <span class="text-danger">*</span></label>
+                                    <label class="form-label fw-bold small">Auteur <span class="text-danger">*</span></label>
                                     <input type="text" name="auteur" value="{{ old('auteur', $input['auteur'] ?? '') }}"
                                         class="form-control form-control-sm @error('auteur') is-invalid @enderror"
-                                        placeholder="Enter author name"
+                                        placeholder="Entrez le nom de l'auteur"
                                         required
-                                        maxlength="255">
+                                        maxlength="255"
+                                        id="bookAuthor">
                                     @error('auteur')
                                     <div class="invalid-feedback small">{{ $message }}</div>
                                     @enderror
-                                    <small class="form-text text-muted small">Maximum 255 characters</small>
+                                    <small class="form-text text-muted small">Maximum 255 caractères</small>
                                 </div>
 
-                                {{-- Category --}}
+                                {{-- Catégorie --}}
                                 <div class="mb-2">
-                                    <label class="form-label fw-bold small">Category <span class="text-danger">*</span></label>
-                                    <select name="category_id" class="form-control form-control-sm @error('category_id') is-invalid @enderror" required>
-                                        <option value="">-- Select Category --</option>
+                                    <label class="form-label fw-bold small">Catégorie <span class="text-danger">*</span></label>
+                                    <select name="category_id" class="form-control form-control-sm @error('category_id') is-invalid @enderror" required id="categorySelect">
+                                        <option value="">-- Sélectionnez une Catégorie --</option>
                                         @foreach($categories as $category)
                                         <option value="{{ $category->id }}" {{ (old('category_id', $input['category_id'] ?? '') == $category->id) ? 'selected' : '' }}>
                                             {{ $category->nom }}
@@ -117,27 +161,15 @@
                                     @error('category_id')
                                     <div class="invalid-feedback small">{{ $message }}</div>
                                     @enderror
-                                </div>
-
-                                {{-- Type --}}
-                                <div class="mb-2">
-                                    <label class="form-label fw-bold small">Type</label>
-                                    <input type="text" name="type" value="{{ old('type', $input['type'] ?? '') }}"
-                                        class="form-control form-control-sm @error('type') is-invalid @enderror"
-                                        placeholder="Enter book type (e.g., Novel, Science Fiction, etc.)"
-                                        maxlength="100">
-                                    @error('type')
-                                    <div class="invalid-feedback small">{{ $message }}</div>
-                                    @enderror
-                                    <small class="form-text text-muted small">Maximum 100 characters</small>
+                                    <small class="form-text text-muted small">Sélectionnez ou laissez l'IA choisir automatiquement</small>
                                 </div>
                             </div>
 
-                            {{-- Right column --}}
+                            {{-- Colonne droite --}}
                             <div class="col-md-6">
-                                {{-- Cover Image --}}
+                                {{-- Image de couverture --}}
                                 <div class="mb-2">
-                                    <label class="form-label fw-bold small">Cover Image <span class="text-danger">*</span></label>
+                                    <label class="form-label fw-bold small">Image de Couverture <span class="text-danger">*</span></label>
                                     <input type="file" name="cover_image"
                                         class="form-control form-control-sm @error('cover_image') is-invalid @enderror"
                                         accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -158,7 +190,7 @@
                                     <textarea name="description"
                                         class="form-control form-control-sm @error('description') is-invalid @enderror"
                                         rows="3"
-                                        placeholder="Enter book description"
+                                        placeholder="Entrez la description du livre"
                                         maxlength="500"
                                         id="bookDescription"
                                         oninput="updateCharCount()">{{ old('description', $input['description'] ?? '') }}</textarea>
@@ -166,20 +198,20 @@
                                     <div class="invalid-feedback small">{{ $message }}</div>
                                     @enderror
                                     <small class="form-text text-muted small">
-                                        Maximum 500 characters. Currently:
-                                        <span id="charCount">{{ strlen(old('description', $input['description'] ?? '')) }}</span> characters
+                                        Maximum 500 caractères. Actuellement :
+                                        <span id="charCount">{{ strlen(old('description', $input['description'] ?? '')) }}</span> caractères
                                     </small>
                                 </div>
 
-                                {{-- PDF file (visible only for admin) --}}
+                                {{-- Fichier PDF (visible seulement pour admin) --}}
                                 @if(auth()->check() && auth()->user()->role === 'admin')
                                 <div class="mb-2">
-                                    <label class="form-label fw-bold small">Book PDF File</label>
+                                    <label class="form-label fw-bold small">Fichier PDF du Livre</label>
                                     <input type="file" name="pdf"
                                         class="form-control form-control-sm @error('pdf') is-invalid @enderror"
                                         accept="application/pdf"
                                         id="pdfFile">
-                                    <small class="form-text text-muted small">Accepted format: PDF only - Max: 10MB</small>
+                                    <small class="form-text text-muted small">Format accepté: PDF seulement - Max: 10MB</small>
                                     @error('pdf')
                                     <div class="invalid-feedback small">{{ $message }}</div>
                                     @enderror
@@ -188,13 +220,13 @@
                                     </div>
                                 </div>
 
-                                {{-- Validation checkbox --}}
+                                {{-- Checkbox de validation --}}
                                 <div class="form-check mb-2">
                                     <input type="checkbox" name="is_valid" value="1"
                                         class="form-check-input @error('is_valid') is-invalid @enderror"
                                         id="is_valid"
                                         {{ old('is_valid') ? 'checked' : '' }}>
-                                    <label class="form-check-label fw-bold small" for="is_valid">Validate the book immediately</label>
+                                    <label class="form-check-label fw-bold small" for="is_valid">Valider le livre immédiatement</label>
                                     @error('is_valid')
                                     <div class="invalid-feedback small">{{ $message }}</div>
                                     @enderror
@@ -203,35 +235,35 @@
                             </div>
                         </div>
 
-                        {{-- Checkbox to force creation despite duplicates --}}
+                        {{-- Checkbox pour forcer la création malgré les doublons --}}
                         @if(isset($duplicates) && !empty($duplicates))
                         <div class="mt-3 p-3 border rounded bg-light">
                             <p class="small mb-2">
-                                <strong class="text-warning">⚠️ Do you still want to continue?</strong><br>
-                                If you are sure this is a different book, you can ignore this warning.
+                                <strong class="text-warning">⚠️ Voulez-vous quand même continuer ?</strong><br>
+                                Si vous êtes sûr qu'il s'agit d'un livre différent, vous pouvez ignorer cet avertissement.
                             </p>
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="force_create" id="force_create" value="1">
                                 <label class="form-check-label small fw-bold text-warning" for="force_create">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>Force creation despite detected duplicates
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Forcer la création malgré les doublons détectés
                                 </label>
                             </div>
                         </div>
                         @endif
 
-                        {{-- Buttons --}}
+                        {{-- Boutons --}}
                         <div class="text-center mt-4">
                             <button type="submit" class="btn btn-sm px-4" id="submitBtn"
                                 style="background-color: #d63384; color: white; border: none;">
                                 <i class="fas fa-plus me-1"></i>
                                 @if(isset($duplicates) && !empty($duplicates))
-                                Confirm Creation
+                                Confirmer la Création
                                 @else
-                                Add Book
+                                Ajouter le Livre
                                 @endif
                             </button>
                             <a href="{{ route('books.index') }}" class="btn btn-secondary btn-sm px-4 ms-2">
-                                <i class="fas fa-times me-1"></i>Cancel
+                                <i class="fas fa-times me-1"></i>Annuler
                             </a>
                         </div>
                     </form>
@@ -243,7 +275,94 @@
 </div>
 
 <script>
-    // ✅ SOLUTION ULTIME - Script directement dans la page
+    // Fonction automatique pour les recommandations IA
+    function getAIRecommendationsAuto() {
+        const title = document.getElementById('bookTitle').value.trim();
+        const author = document.getElementById('bookAuthor').value.trim();
+
+        if (!title) {
+            return;
+        }
+
+        // Afficher un indicateur de chargement
+        const titleInput = document.getElementById('bookTitle');
+        const originalBorder = titleInput.style.border;
+        titleInput.style.border = '2px solid #0d6efd';
+
+        // Faire une requête AJAX pour obtenir les recommandations IA
+        fetch('{{ route("books.ai.recommendations") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    title: title,
+                    author: author
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Appliquer automatiquement les recommandations
+                    applyAIRecommendations(data);
+                    titleInput.style.border = '2px solid #198754';
+                } else {
+                    titleInput.style.border = originalBorder;
+                    console.error('Erreur IA:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                titleInput.style.border = originalBorder;
+            });
+    }
+
+    // Appliquer les recommandations IA automatiquement
+    function applyAIRecommendations(data) {
+        // Appliquer la catégorie seulement si elle existe
+        if (data.recommended_category && data.recommended_category.id) {
+            const categorySelect = document.getElementById('categorySelect');
+            for (let option of categorySelect.options) {
+                if (option.value == data.recommended_category.id) {
+                    option.selected = true;
+                    break;
+                }
+            }
+            showToast('Catégorie IA appliquée: ' + data.recommended_category.nom, 'success');
+        } else {
+            showToast('Description générée par IA - Aucune catégorie suggérée', 'info');
+        }
+
+        // Appliquer la description
+        if (data.generated_description) {
+            const descriptionTextarea = document.getElementById('bookDescription');
+            descriptionTextarea.value = data.generated_description;
+            updateCharCount(); // Mettre à jour le compteur de caractères
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        // Notification toast simple
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 250px;';
+        toast.innerHTML = `
+            <i class="fas fa-robot me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(toast);
+
+        // Suppression automatique après 3 secondes
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 3000);
+    }
+
+    // Script directement dans la page
     function updateCharCount() {
         const textarea = document.getElementById('bookDescription');
         const counter = document.getElementById('charCount');
@@ -279,11 +398,11 @@
                 if (this.files.length > 0) {
                     const file = this.files[0];
                     const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                    fileInfo.textContent = `Selected: ${file.name} (${fileSize} MB)`;
+                    fileInfo.textContent = `Sélectionné: ${file.name} (${fileSize} MB)`;
                     fileInfo.style.color = 'green';
 
                     if (file.size > 2 * 1024 * 1024) {
-                        fileInfo.textContent = `File too large: ${fileSize} MB (max 2MB)`;
+                        fileInfo.textContent = `Fichier trop volumineux: ${fileSize} MB (max 2MB)`;
                         fileInfo.style.color = 'red';
                         this.value = '';
                     }
@@ -302,15 +421,15 @@
                 if (this.files.length > 0) {
                     const file = this.files[0];
                     const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                    pdfFileInfo.textContent = `Selected: ${file.name} (${fileSize} MB)`;
+                    pdfFileInfo.textContent = `Sélectionné: ${file.name} (${fileSize} MB)`;
                     pdfFileInfo.style.color = 'green';
 
                     if (file.type !== 'application/pdf') {
-                        pdfFileInfo.textContent = 'Invalid file type. Please select a PDF file.';
+                        pdfFileInfo.textContent = 'Type de fichier invalide. Veuillez sélectionner un fichier PDF.';
                         pdfFileInfo.style.color = 'red';
                         this.value = '';
                     } else if (file.size > 10 * 1024 * 1024) {
-                        pdfFileInfo.textContent = `File too large: ${fileSize} MB (max 10MB)`;
+                        pdfFileInfo.textContent = `Fichier trop volumineux: ${fileSize} MB (max 10MB)`;
                         pdfFileInfo.style.color = 'red';
                         this.value = '';
                     }
@@ -329,11 +448,11 @@
                 const hasDuplicates = <?php echo json_encode(isset($duplicates) && !empty($duplicates)); ?>;
 
                 if (this.checked) {
-                    submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Force Add Despite Warnings';
+                    submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Forcer l\'ajout malgré les avertissements';
                     submitBtn.style.backgroundColor = '#ffc107';
                     submitBtn.style.color = '#000';
                 } else {
-                    const buttonText = hasDuplicates ? 'Confirm Creation' : 'Add Book';
+                    const buttonText = hasDuplicates ? 'Confirmer la Création' : 'Ajouter le Livre';
                     submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i>' + buttonText;
                     submitBtn.style.backgroundColor = '#d63384';
                     submitBtn.style.color = 'white';
@@ -342,7 +461,7 @@
         }
     });
 
-    // ✅ Correction des erreurs SVG
+    // Correction des erreurs SVG
     window.addEventListener('error', function(e) {
         if (e.target && (e.target.tagName === 'svg' || e.target.tagName === 'path')) {
             e.preventDefault();
@@ -363,7 +482,7 @@
 </script>
 
 <style>
-    /* ✅ Styles du compteur de caractères */
+    /* Styles du compteur de caractères */
     #charCount {
         font-size: 0.75rem;
         font-weight: normal;
@@ -378,7 +497,7 @@
         margin-left: 5px;
     }
 
-    /* ✅ Correction des erreurs SVG */
+    /* Correction des erreurs SVG */
     svg:not([width]):not([height]) {
         display: none !important;
     }
@@ -398,7 +517,7 @@
         display: none !important;
     }
 
-    /* ✅ Styles existants */
+    /* Styles existants */
     .card-header {
         background: linear-gradient(45deg, #d63384, #e91e63) !important;
         border-bottom: none;

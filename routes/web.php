@@ -271,4 +271,7 @@ Route::get('/posts/{post}/reactions', [ReactionController::class, 'getReactions'
 
     // Routes pour l'API de recherche (dans web.php car vous utilisez le même contrôleur)
     Route::get('/api/books/search', [App\Http\Controllers\FrontendController::class, 'searchBooks']);
+
+    // Dans la section des routes authentifiées
+    Route::post('/books/ai/recommendations', [BookController::class, 'getAIRecommendations'])->name('books.ai.recommendations');
 });

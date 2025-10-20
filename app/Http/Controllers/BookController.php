@@ -10,14 +10,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\DuplicateDetectorService;
+use App\Services\BookAIService;
 
 class BookController extends Controller
 {
     protected $duplicateDetector;
+    protected $aiService;
 
     public function __construct()
     {
         $this->duplicateDetector = new DuplicateDetectorService();
+        $this->aiService = new BookAIService();
     }
 
     /**
@@ -72,10 +75,62 @@ class BookController extends Controller
     /**
      * Affiche le formulaire de création d'un livre
      */
-    public function create()
+    public function create(Request $request)
     {
         $categories = Category::all();
-        return view('books.create', compact('categories'));
+        
+        // Vérifier si on a un titre pour les recommandations IA
+        $aiData = [];
+        $input = [];
+        
+        if ($request->has('ai_title')) {
+            $title = $request->get('ai_title');
+            $author = $request->get('ai_author', '');
+            
+            $aiData = $this->aiService->getAIRecommendations($title, $author);
+            
+            // Pré-remplir automatiquement les champs
+            $input = [
+                'titre' => $title,
+                'auteur' => $author,
+                'description' => $aiData['generated_description'] ?? ''
+            ];
+            
+            // Pré-remplir la catégorie seulement si elle existe
+            if (isset($aiData['recommended_category']['id'])) {
+                $input['category_id'] = $aiData['recommended_category']['id'];
+            }
+        }
+        
+        return view('books.create', compact('categories', 'aiData', 'input'));
+    }
+
+    /**
+     * Obtenir les recommandations IA via AJAX
+     */
+    public function getAIRecommendations(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'author' => 'nullable|string|max:255'
+        ]);
+
+        try {
+            $recommendations = $this->aiService->getAIRecommendations(
+                $request->title,
+                $request->author
+            );
+
+            return response()->json($recommendations);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur API recommandation IA:', ['error' => $e->getMessage()]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Impossible d\'obtenir les recommandations IA'
+            ], 500);
+        }
     }
 
     /**
