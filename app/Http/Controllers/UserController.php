@@ -6,11 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Reservation;
 use App\Models\Review;
-<<<<<<< HEAD
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use Illuminate\Support\Facades\Log;
-=======
 use App\Models\ClubLecture;
 use App\Models\Notification;
 use App\Models\ClubMember;
@@ -22,18 +17,13 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 /** @var User $user */ // AJOUTEZ CETTE LIGNE pour aider Intelephense
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 
 class UserController extends Controller
 {
     public function dashboard()
     {
         $user = Auth::user();
-<<<<<<< HEAD
         
-=======
-
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         // Vérifier si l'utilisateur est connecté
         if (!$user) {
             abort(403, 'User not authenticated');
@@ -43,45 +33,29 @@ class UserController extends Controller
         $activeReservations = 0;
         $totalReviews = 0;
         $availableBooks = 0;
-<<<<<<< HEAD
-=======
         $totalClubs = 0;
         $recentClubs = collect();
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 
         try {
             // Compter les réservations de l'utilisateur
             $activeReservations = Reservation::where('user_id', $user->id)->count();
-<<<<<<< HEAD
             
             // Compter les reviews de l'utilisateur
             $totalReviews = Review::where('user_id', $user->id)->count();
             
             // Compter les livres disponibles
             $availableBooks = Book::where('is_valid', true)->count();
-
-=======
-
-            // Compter les reviews de l'utilisateur
-            $totalReviews = Review::where('user_id', $user->id)->count();
-
-            // Compter les livres disponibles
-            $availableBooks = Book::where('is_valid', true)->count();
-
+            
             // Compter tous les clubs disponibles
             $totalClubs = ClubLecture::count();
-
-            // Récupérer les 3 clubs les plus récents
+            
+            // Récupérer les 3 clubs les plus récents (sans doublons)
             $recentClubs = ClubLecture::with('createur')
                 ->latest()
+                ->distinct()
                 ->take(3)
                 ->get();
 
-            // Pour chaque club, déterminer le statut de l'utilisateur
-            $recentClubs->each(function ($club) use ($user) {
-                $club->user_status = $this->getUserClubStatus($club, $user->id);
-            });
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         } catch (\Exception $e) {
             // En cas d'erreur, logger l'erreur mais continuer avec les valeurs par défaut
             Log::error('User Dashboard Error: ' . $e->getMessage());
@@ -91,13 +65,9 @@ class UserController extends Controller
         return view('dashboard_user', [
             'activeReservations' => $activeReservations,
             'totalReviews' => $totalReviews,
-<<<<<<< HEAD
-            'availableBooks' => $availableBooks
-=======
             'availableBooks' => $availableBooks,
             'totalClubs' => $totalClubs,
             'recentClubs' => $recentClubs
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         ]);
     }
 
@@ -112,79 +82,79 @@ class UserController extends Controller
         }
     }
 
-<<<<<<< HEAD
-=======
-    public function clubs()
-    {
-        try {
-            $user = Auth::user();
-
-            // Récupérer tous les clubs sans doublons
-            $clubs = ClubLecture::with('createur')
-                ->withCount('evenements')
-                ->latest()
-                ->get();
-
-            // Pour chaque club, déterminer le statut de l'utilisateur
-            $clubs->each(function ($club) use ($user) {
-                $club->user_status = $this->getUserClubStatus($club, $user->id);
-            });
-
-            return view('user.clubs', compact('clubs'));
-        } catch (\Exception $e) {
-            Log::error('User Clubs Error: ' . $e->getMessage());
-            return redirect()->route('user.dashboard')->with('error', 'Unable to load clubs.');
-        }
+     public function clubs()
+{
+    try {
+        $user = Auth::user();
+        
+        // Récupérer tous les clubs sans doublons
+        $clubs = ClubLecture::with('createur')
+            ->withCount('evenements')
+            ->latest()
+            ->distinct()
+            ->get();
+            
+        // Pour chaque club, déterminer le statut de l'utilisateur
+        $clubs->each(function ($club) use ($user) {
+            $club->user_status = $this->getUserClubStatus($club, $user->id);
+        });
+        
+        return view('user.clubs', compact('clubs'));
+    } catch (\Exception $e) {
+        Log::error('User Clubs Error: ' . $e->getMessage());
+        return redirect()->route('user.dashboard')->with('error', 'Unable to load clubs.');
     }
+}
+
 
     public function joinClub(Request $request, $clubId)
-    {
-        try {
-            $user = Auth::user();
-            $club = ClubLecture::findOrFail($clubId);
+{
+    try {
+        $user = Auth::user();
+        $club = ClubLecture::findOrFail($clubId);
 
-            // Vérifier si l'utilisateur est déjà membre
-            if ($club->isMember($user->id)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous êtes déjà membre de ce club.'
-                ]);
-            }
-
-            // Vérifier si l'utilisateur a déjà une demande en attente
-            if ($club->hasPendingRequest($user->id)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous avez déjà une demande en attente pour ce club.'
-                ]);
-            }
-
-            // Créer la notification pour le manager du club
-            $notification = Notification::create([
-                'user_id' => $club->createur_id,
-                'applicant_id' => $user->id,
-                'club_id' => $clubId,
-                'type' => 'join_request',
-                'message' => "{$user->name} souhaite rejoindre votre club '{$club->nom}'",
-                'status' => 'pending'
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Votre demande a été envoyée et est en attente d\'approbation.',
-                'notification_id' => $notification->id
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Join Club Error: ' . $e->getMessage());
-
+        // Vérifier si l'utilisateur est déjà membre
+        if ($club->isMember($user->id)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Une erreur est survenue lors de l\'envoi de votre demande.'
-            ], 500);
+                'message' => 'Vous êtes déjà membre de ce club.'
+            ]);
         }
-    }
 
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
+        // Vérifier si l'utilisateur a déjà une demande en attente
+        if ($club->hasPendingRequest($user->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous avez déjà une demande en attente pour ce club.'
+            ]);
+        }
+
+        // Créer la notification pour le manager du club
+        $notification = Notification::create([
+            'user_id' => $club->createur_id,
+            'applicant_id' => $user->id,
+            'club_id' => $clubId,
+            'type' => 'join_request',
+            'message' => "{$user->name} souhaite rejoindre votre club '{$club->nom}'",
+            'status' => 'pending'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Votre demande a été envoyée et est en attente d\'approbation.',
+            'notification_id' => $notification->id
+        ]);
+        
+    } catch (\Exception $e) {
+        Log::error('Join Club Error: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Une erreur est survenue lors de l\'envoi de votre demande.'
+        ], 500);
+    }
+}
+
     public function profile()
     {
         $user = Auth::user();
@@ -194,11 +164,7 @@ class UserController extends Controller
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         // Validation des données
         $request->validate([
             'name' => 'required|string|max:255',
@@ -215,55 +181,57 @@ class UserController extends Controller
             ]);
 
             return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
-<<<<<<< HEAD
-
-=======
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         } catch (\Exception $e) {
             Log::error('Update Profile Error: ' . $e->getMessage());
             return redirect()->route('user.profile')->with('error', 'Error updating profile.');
         }
     }
-<<<<<<< HEAD
-}
-=======
 
     /**
      * Récupérer les notifications de l'utilisateur avec les événements des clubs
      */
-    public function notifications()
-    {
-        try {
-            /** @var User $user */
-            $user = Auth::user();
+        public function notifications()
+{
+    try {
+        $user = Auth::user();
+        
+        // Récupérer uniquement les notifications d'acceptation/refus pour l'utilisateur
+        $notifications = Notification::with(['club'])
+            ->where(function($query) use ($user) {
+                $query->where('applicant_id', $user->id) // L'utilisateur est le demandeur
+                      ->whereIn('type', ['join_approved', 'join_rejected']);
+            })
+            ->orWhere(function($query) use ($user) {
+                $query->where('user_id', $user->id) // L'utilisateur est le destinataire
+                      ->whereIn('type', ['join_approved', 'join_rejected']);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-            // Utiliser la méthode personnalisée pour les notifications
-            $notifications = $user->getFormattedNotifications();
+        // Récupérer les événements des clubs où l'utilisateur est membre
+        $userClubs = ClubMember::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->pluck('club_id');
+        
+        $clubEvents = Evenement::with('club')
+            ->whereIn('club_id', $userClubs)
+            ->where('date_event', '>=', now())
+            ->orderBy('date_event', 'asc')
+            ->get();
 
-            // Récupérer les événements des clubs où l'utilisateur est membre
-            $userClubs = ClubMember::where('user_id', $user->id)
-                ->where('status', 'active')
-                ->pluck('club_id');
+        // Convertir manuellement les dates_event en objets Carbon si nécessaire
+        $clubEvents->each(function ($event) {
+            if (!$event->date_event instanceof Carbon) {
+                $event->date_event = Carbon::parse($event->date_event);
+            }
+        });
 
-            $clubEvents = Evenement::with('club')
-                ->whereIn('club_id', $userClubs)
-                ->where('date_event', '>=', now())
-                ->orderBy('date_event', 'asc')
-                ->get();
-
-            // Convertir manuellement les dates_event en objets Carbon si nécessaire
-            $clubEvents->each(function ($event) {
-                if (!$event->date_event instanceof Carbon) {
-                    $event->date_event = Carbon::parse($event->date_event);
-                }
-            });
-
-            return view('user.notifications', compact('notifications', 'clubEvents'));
-        } catch (\Exception $e) {
-            Log::error('User Notifications Error: ' . $e->getMessage());
-            return redirect()->route('user.dashboard')->with('error', 'Unable to load notifications.');
-        }
+        return view('user.notifications', compact('notifications', 'clubEvents'));
+    } catch (\Exception $e) {
+        Log::error('User Notifications Error: ' . $e->getMessage());
+        return redirect()->route('user.dashboard')->with('error', 'Unable to load notifications.');
     }
+}
 
     /**
      * Marquer une notification comme lue
@@ -273,9 +241,9 @@ class UserController extends Controller
         try {
             $user = Auth::user();
             $notification = Notification::where('id', $id)
-                ->where(function ($query) use ($user) {
+                ->where(function($query) use ($user) {
                     $query->where('user_id', $user->id)
-                        ->orWhere('applicant_id', $user->id);
+                          ->orWhere('applicant_id', $user->id);
                 })
                 ->firstOrFail();
 
@@ -295,19 +263,18 @@ class UserController extends Controller
             ]);
         }
     }
-
     /**
      * Marquer toutes les notifications comme lues
      */
-    public function markAllNotificationsAsRead()
+   public function markAllNotificationsAsRead()
     {
         try {
             $user = Auth::user();
-
-            Notification::where(function ($query) use ($user) {
-                $query->where('user_id', $user->id)
-                    ->orWhere('applicant_id', $user->id);
-            })
+            
+            Notification::where(function($query) use ($user) {
+                    $query->where('user_id', $user->id)
+                          ->orWhere('applicant_id', $user->id);
+                })
                 ->whereNull('read_at')
                 ->update(['read_at' => now()]);
 
@@ -332,11 +299,11 @@ class UserController extends Controller
         if ($club->isMember($userId)) {
             return 'member';
         }
-
+        
         if ($club->hasPendingRequest($userId)) {
             return 'pending';
         }
-
+        
         return 'not_member';
     }
 
@@ -347,9 +314,8 @@ class UserController extends Controller
     {
         try {
             $user = Auth::user();
-            // Utiliser l'accesseur personnalisé
-            $count = $user->unread_notifications_count;
-
+            $count = $user->unreadNotificationsCount();
+            
             return response()->json([
                 'success' => true,
                 'count' => $count
@@ -529,4 +495,3 @@ class UserController extends Controller
         }
     }
 }
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)

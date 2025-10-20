@@ -1,7 +1,7 @@
 @extends('layouts.user_type.auth')
 
 @section('content')
-<main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ">
+<main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg">
     <div class="container-fluid py-4">
         <div class="row mb-3">
             <div class="col-6">
@@ -12,13 +12,9 @@
                 @endif
             </div>
             <div class="col-6 text-end">
-<<<<<<< HEAD
-                <a href="{{ route('club_manager.events.create') }}" class="btn btn-primary">Ajouter un Événement</a>
-=======
                 <button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#createEventForm">
                     Ajouter un Événement
                 </button>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                 @if(isset($club))
                     <a href="{{ route('club_manager.clubs.index') }}" class="btn btn-secondary">Retour aux Clubs</a>
                 @endif
@@ -26,11 +22,6 @@
         </div>
 
         @if(session('success'))
-<<<<<<< HEAD
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-=======
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -49,14 +40,15 @@
                             @csrf
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="titre" class="form-label">Titre <span class="text-danger">*</span></label>
+                                    <label class="form-label">Titre <span class="text-danger">*</span></label>
                                     <input type="text" name="titre" class="form-control" value="{{ old('titre') }}" required>
                                     @error('titre')
                                         <div class="text-danger text-sm">{{ $message }}</div>
                                     @enderror
                                 </div>
+
                                 <div class="col-md-6 mb-3">
-                                    <label for="club_id" class="form-label">Club <span class="text-danger">*</span></label>
+                                    <label class="form-label">Club <span class="text-danger">*</span></label>
                                     <select name="club_id" class="form-control" required>
                                         <option value="">-- Sélectionnez un club --</option>
                                         @foreach($clubs as $clubItem)
@@ -69,15 +61,17 @@
                                         <div class="text-danger text-sm">{{ $message }}</div>
                                     @enderror
                                 </div>
+
                                 <div class="col-12 mb-3">
-                                    <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                    <label class="form-label">Description <span class="text-danger">*</span></label>
                                     <textarea name="description" class="form-control" rows="4" required>{{ old('description') }}</textarea>
                                     @error('description')
                                         <div class="text-danger text-sm">{{ $message }}</div>
                                     @enderror
                                 </div>
+
                                 <div class="col-md-6 mb-3">
-                                    <label for="date_event" class="form-label">Date de l'événement <span class="text-danger">*</span></label>
+                                    <label class="form-label">Date de l'événement <span class="text-danger">*</span></label>
                                     <input type="date" name="date_event" class="form-control" value="{{ old('date_event') }}" required>
                                     @error('date_event')
                                         <div class="text-danger text-sm">{{ $message }}</div>
@@ -92,7 +86,6 @@
             </div>
         </div>
 
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         {{-- Formulaire d'édition inline --}}
         @if(isset($editEvent))
         <div class="row mb-4">
@@ -107,58 +100,42 @@
                             @method('PUT')
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="titre" class="form-label">Titre</label>
+                                    <label class="form-label">Titre</label>
                                     <input type="text" name="titre" class="form-control" value="{{ old('titre', $editEvent->titre) }}" required>
-<<<<<<< HEAD
-=======
                                     @error('titre')
                                         <div class="text-danger text-sm">{{ $message }}</div>
                                     @enderror
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                 </div>
+
                                 <div class="col-md-6 mb-3">
-                                    <label for="club_id" class="form-label">Club</label>
+                                    <label class="form-label">Club</label>
                                     <select name="club_id" class="form-control" required>
-<<<<<<< HEAD
-                                        @foreach($clubs as $clubItem)
-                                            <option value="{{ $clubItem->id }}" {{ $editEvent->club_id == $clubItem->id ? 'selected' : '' }}>
-=======
                                         <option value="">-- Sélectionnez un club --</option>
                                         @foreach($clubs as $clubItem)
                                             <option value="{{ $clubItem->id }}" {{ (old('club_id', $editEvent->club_id) == $clubItem->id) ? 'selected' : '' }}>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                                 {{ $clubItem->nom }}
                                             </option>
                                         @endforeach
                                     </select>
-<<<<<<< HEAD
-                                </div>
-                                <div class="col-12 mb-3">
-                                    <label for="description" class="form-label">Description</label>
-                                    <textarea name="description" class="form-control" rows="4">{{ old('description', $editEvent->description) }}</textarea>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="date_event" class="form-label">Date de l'événement</label>
-                                    <input type="date" name="date_event" class="form-control" value="{{ old('date_event', $editEvent->date_event) }}" required>
-=======
                                     @error('club_id')
                                         <div class="text-danger text-sm">{{ $message }}</div>
                                     @enderror
                                 </div>
+
                                 <div class="col-12 mb-3">
-                                    <label for="description" class="form-label">Description</label>
+                                    <label class="form-label">Description</label>
                                     <textarea name="description" class="form-control" rows="4" required>{{ old('description', $editEvent->description) }}</textarea>
                                     @error('description')
                                         <div class="text-danger text-sm">{{ $message }}</div>
                                     @enderror
                                 </div>
+
                                 <div class="col-md-6 mb-3">
-                                    <label for="date_event" class="form-label">Date de l'événement</label>
+                                    <label class="form-label">Date de l'événement</label>
                                     <input type="date" name="date_event" class="form-control" value="{{ old('date_event', $editEvent->date_event ? \Carbon\Carbon::parse($editEvent->date_event)->format('Y-m-d') : '') }}" required>
                                     @error('date_event')
                                         <div class="text-danger text-sm">{{ $message }}</div>
                                     @enderror
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-success">Modifier l'Événement</button>
@@ -174,10 +151,6 @@
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
-<<<<<<< HEAD
-                    <div class="card-header pb-0">
-                        <h6>Liste des Événements</h6>
-=======
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                         <h6>Liste des Événements</h6>
                         @if($clubs->count() > 0)
@@ -192,7 +165,6 @@
                             </select>
                         </div>
                         @endif
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                     </div>
                     <div class="card-body px-0 pt-0 pb-2">
                         <div class="table-responsive p-0">
@@ -203,11 +175,7 @@
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Club</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
-<<<<<<< HEAD
-                                        <th class="text-secondary opacity-7">Actions</th>
-=======
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -228,19 +196,6 @@
                                         </td>
                                         <td class="align-middle text-center text-sm">
                                             <p class="text-xs text-secondary mb-0">
-<<<<<<< HEAD
-                                                {{ \Carbon\Carbon::parse($event->date_event)->format('d/m/Y') }}
-                                            </p>
-                                        </td>
-                                        <td class="align-middle">
-                                            <a href="{{ route('club_manager.events.index', ['edit' => $event->id]) }}"
-                                               class="text-secondary font-weight-bold text-xs me-2">Modifier</a>
-                                            <form action="{{ route('club_manager.events.destroy', $event->id) }}" method="POST" style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="text-danger font-weight-bold text-xs border-0 bg-transparent" onclick="return confirm('Êtes-vous sûr?')">Supprimer</button>
-                                            </form>
-=======
                                                 {{ $event->date_event ? \Carbon\Carbon::parse($event->date_event)->format('d/m/Y') : 'N/A' }}
                                             </p>
                                         </td>
@@ -262,7 +217,6 @@
                                                     </button>
                                                 </form>
                                             </div>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                         </td>
                                     </tr>
                                     @empty
@@ -279,9 +233,6 @@
         </div>
     </div>
 </main>
-<<<<<<< HEAD
-@endsection
-=======
 @endsection
 
 @push('scripts')
@@ -300,10 +251,9 @@
         });
     @endif
 
-    // Ouvrir automatiquement le formulaire d'édition si on arrive avec le paramètre edit
+    // Scroll vers le formulaire d'édition si on arrive avec le paramètre edit
     @if(isset($editEvent))
         document.addEventListener('DOMContentLoaded', function() {
-            // Scroll vers le formulaire d'édition
             const editForm = document.querySelector('.row.mb-4');
             if (editForm) {
                 editForm.scrollIntoView({ behavior: 'smooth' });
@@ -312,4 +262,3 @@
     @endif
 </script>
 @endpush
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)

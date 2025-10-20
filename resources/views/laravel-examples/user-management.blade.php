@@ -31,160 +31,37 @@
                                 <h5 class="mb-0">All Users</h5>
                                 <p class="text-sm mb-0">Manage moderators, club managers and users</p>
                             </div>
-                            <a href="{{ route('users.create') }}" class="btn bg-gradient-primary btn-sm mb-0" type="button">
-                                <i class="fas fa-plus me-1"></i> New User
-                            </a>
-                        </div>
-                    </div>
-<<<<<<< HEAD
-=======
-
-                    {{-- Inline Edit Form --}}
-                    @if(isset($editUser))
-                    <div class="card-body">
-                        <div class="card">
-                            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-                                <h6>Edit User: <span class="text-primary">{{ $editUser->name }}</span></h6>
-                                <a href="{{ route('user-management') }}" class="btn btn-sm btn-secondary">
-                                    <i class="fas fa-times me-1"></i>Cancel
+                            <div>
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" id="toggleSearchBtn">
+                                    <i class="fas fa-search me-1"></i>Search
+                                </button>
+                                <a href="{{ route('users.create') }}" class="btn bg-gradient-primary btn-sm mb-0" type="button">
+                                    <i class="fas fa-plus me-1"></i> New User
                                 </a>
                             </div>
-                            <div class="card-body">
-                                <form action="{{ route('users.update', $editUser->id) }}" method="POST" id="editUserForm" enctype="multipart/form-data">
-                                    @csrf
-                                    @method('PUT')
-                                    
-                                    <div class="row">
-                                        <!-- Name -->
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Full Name <span class="text-danger">*</span></label>
-                                            <input type="text" name="name" class="form-control" 
-                                                   value="{{ old('name', $editUser->name) }}" 
-                                                   placeholder="Enter full name" 
-                                                   required 
-                                                   minlength="2"
-                                                   maxlength="255"
-                                                   id="editNameInput">
-                                            <div class="form-text">
-                                                <span id="editNameCount">{{ strlen(old('name', $editUser->name)) }}</span>/255 characters
-                                                <span id="editNameStatus" class="ms-2"></span>
-                                            </div>
-                                            <div class="invalid-feedback" id="editNameError">
-                                                Name must be between 2 and 255 characters.
-                                            </div>
-                                        </div>
-
-                                        <!-- Email -->
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Email <span class="text-danger">*</span></label>
-                                            <input type="email" name="email" class="form-control" 
-                                                   value="{{ old('email', $editUser->email) }}" 
-                                                   placeholder="Enter email address" 
-                                                   required
-                                                   id="editEmailInput">
-                                            <div class="form-text">
-                                                <i class="fas fa-envelope me-1"></i>Must be a valid email address
-                                            </div>
-                                            <div class="invalid-feedback" id="editEmailError">
-                                                Please enter a valid email address.
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <!-- Phone -->
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Phone Number</label>
-                                            <input type="tel" name="phone" class="form-control" 
-                                                   value="{{ old('phone', $editUser->phone) }}" 
-                                                   placeholder="Enter phone number"
-                                                   pattern="[0-9+\-\s()]{10,20}"
-                                                   id="editPhoneInput">
-                                            <div class="form-text">
-                                                <i class="fas fa-phone me-1"></i>Optional phone number
-                                            </div>
-                                            <div class="invalid-feedback" id="editPhoneError">
-                                                Please enter a valid phone number (10-20 digits).
-                                            </div>
-                                        </div>
-
-                                        <!-- Role -->
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Role <span class="text-danger">*</span></label>
-                                            <select name="role" class="form-control" required id="editRoleSelect">
-                                                <option value="user" {{ old('role', $editUser->role) == 'user' ? 'selected' : '' }}>User</option>
-                                                <option value="moderator" {{ old('role', $editUser->role) == 'moderator' ? 'selected' : '' }}>Moderator</option>
-                                                <option value="club_manager" {{ old('role', $editUser->role) == 'club_manager' ? 'selected' : '' }}>Club Manager</option>
-                                            </select>
-                                            <div class="form-text">
-                                                <i class="fas fa-user-tag me-1"></i>Select user role
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Password (Optional) -->
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">New Password</label>
-                                            <input type="password" name="password" class="form-control" 
-                                                   placeholder="Leave blank to keep current password"
-                                                   minlength="8"
-                                                   id="editPasswordInput">
-                                            <div class="form-text">
-                                                <span id="editPasswordCount">0</span>/8 characters minimum
-                                                <span id="editPasswordStatus" class="ms-2"></span>
-                                            </div>
-                                            <div class="invalid-feedback" id="editPasswordError">
-                                                Password must be at least 8 characters.
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Confirm Password</label>
-                                            <input type="password" name="password_confirmation" class="form-control" 
-                                                   placeholder="Confirm new password"
-                                                   id="editPasswordConfirmInput">
-                                            <div class="form-text">
-                                                <i class="fas fa-shield-alt me-1"></i>Re-enter password for confirmation
-                                            </div>
-                                            <div class="invalid-feedback" id="editPasswordConfirmError">
-                                                Passwords do not match.
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Submit Button -->
-                                    <div class="d-flex justify-content-end">
-                                        <button type="submit" class="btn bg-gradient-success" id="editSubmitBtn">
-                                            <i class="fas fa-save me-2"></i>Update User
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
                         </div>
                     </div>
-                    @endif
 
-                    {{-- Users Table - Only show when not editing --}}
-                    @if(!isset($editUser))
-
-                    {{-- Advanced Search Bar --}}
-                    <div class="card-body">
+                    {{-- Advanced Search Bar - CACHÉ PAR DÉFAUT --}}
+                    <div class="card-body d-none" id="searchSection">
                         <div class="card">
-                            <div class="card-header pb-0">
+                            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                                 <h6>Advanced Search</h6>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="closeSearchBtn">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
                             <div class="card-body">
                                 <form action="{{ route('user-management') }}" method="GET" id="searchForm">
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Name</label>
-                                            <input type="text" name="name" class="form-control" placeholder="Search by name..." 
+                                            <input type="text" name="name" class="form-control" placeholder="Search by name..."
                                                    value="{{ request('name') }}">
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Email</label>
-                                            <input type="text" name="email" class="form-control" placeholder="Search by email..." 
+                                            <input type="text" name="email" class="form-control" placeholder="Search by email..."
                                                    value="{{ request('email') }}">
                                         </div>
                                         <div class="col-md-4 mb-3">
@@ -198,12 +75,12 @@
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Phone</label>
-                                            <input type="text" name="phone" class="form-control" placeholder="Search by phone..." 
+                                            <input type="text" name="phone" class="form-control" placeholder="Search by phone..."
                                                    value="{{ request('phone') }}">
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Creation Date</label>
-                                            <input type="date" name="created_at" class="form-control" 
+                                            <input type="date" name="created_at" class="form-control"
                                                    value="{{ request('created_at') }}">
                                         </div>
                                         <div class="col-md-4 mb-3">
@@ -252,7 +129,7 @@
                                     </a>
                                 </span>
                                 @endif
-                                
+
                                 @if(request('email'))
                                 <span class="badge bg-gradient-info">
                                     Email: "{{ request('email') }}"
@@ -261,7 +138,7 @@
                                     </a>
                                 </span>
                                 @endif
-                                
+
                                 @if(request('role'))
                                 <span class="badge bg-gradient-success">
                                     Role: {{ ucfirst(request('role')) }}
@@ -270,7 +147,7 @@
                                     </a>
                                 </span>
                                 @endif
-                                
+
                                 @if(request('phone'))
                                 <span class="badge bg-gradient-warning">
                                     Phone: "{{ request('phone') }}"
@@ -279,7 +156,7 @@
                                     </a>
                                 </span>
                                 @endif
-                                
+
                                 @if(request('created_at'))
                                 <span class="badge bg-gradient-dark">
                                     Created: {{ request('created_at') }}
@@ -293,21 +170,139 @@
                     </div>
                     @endif
 
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
+                    {{-- Inline Edit Form --}}
+                    @if(isset($editUser))
+                    <div class="card-body">
+                        <div class="card">
+                            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                                <h6>Edit User: <span class="text-primary">{{ $editUser->name }}</span></h6>
+                                <a href="{{ route('user-management') }}" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                <form action="{{ route('users.update', $editUser->id) }}" method="POST" id="editUserForm" enctype="multipart/form-data">
+                                    @csrf
+                                    @method('PUT')
+
+                                    <div class="row">
+                                        <!-- Name -->
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                                            <input type="text" name="name" class="form-control"
+                                                   value="{{ old('name', $editUser->name) }}"
+                                                   placeholder="Enter full name"
+                                                   required
+                                                   minlength="2"
+                                                   maxlength="255"
+                                                   id="editNameInput">
+                                            <div class="form-text">
+                                                <span id="editNameCount">{{ strlen(old('name', $editUser->name)) }}</span>/255 characters
+                                                <span id="editNameStatus" class="ms-2"></span>
+                                            </div>
+                                            <div class="invalid-feedback" id="editNameError">
+                                                Name must be between 2 and 255 characters.
+                                            </div>
+                                        </div>
+
+                                        <!-- Email -->
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                                            <input type="email" name="email" class="form-control"
+                                                   value="{{ old('email', $editUser->email) }}"
+                                                   placeholder="Enter email address"
+                                                   required
+                                                   id="editEmailInput">
+                                            <div class="form-text">
+                                                <i class="fas fa-envelope me-1"></i>Must be a valid email address
+                                            </div>
+                                            <div class="invalid-feedback" id="editEmailError">
+                                                Please enter a valid email address.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Phone -->
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Phone Number</label>
+                                            <input type="tel" name="phone" class="form-control"
+                                                   value="{{ old('phone', $editUser->phone) }}"
+                                                   placeholder="Enter phone number"
+                                                   pattern="[0-9+\-\s()]{10,20}"
+                                                   id="editPhoneInput">
+                                            <div class="form-text">
+                                                <i class="fas fa-phone me-1"></i>Optional phone number
+                                            </div>
+                                            <div class="invalid-feedback" id="editPhoneError">
+                                                Please enter a valid phone number (10-20 digits).
+                                            </div>
+                                        </div>
+
+                                        <!-- Role -->
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Role <span class="text-danger">*</span></label>
+                                            <select name="role" class="form-control" required id="editRoleSelect">
+                                                <option value="user" {{ old('role', $editUser->role) == 'user' ? 'selected' : '' }}>User</option>
+                                                <option value="moderator" {{ old('role', $editUser->role) == 'moderator' ? 'selected' : '' }}>Moderator</option>
+                                                <option value="club_manager" {{ old('role', $editUser->role) == 'club_manager' ? 'selected' : '' }}>Club Manager</option>
+                                            </select>
+                                            <div class="form-text">
+                                                <i class="fas fa-user-tag me-1"></i>Select user role
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Password (Optional) -->
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">New Password</label>
+                                            <input type="password" name="password" class="form-control"
+                                                   placeholder="Leave blank to keep current password"
+                                                   minlength="8"
+                                                   id="editPasswordInput">
+                                            <div class="form-text">
+                                                <span id="editPasswordCount">0</span>/8 characters minimum
+                                                <span id="editPasswordStatus" class="ms-2"></span>
+                                            </div>
+                                            <div class="invalid-feedback" id="editPasswordError">
+                                                Password must be at least 8 characters.
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Confirm Password</label>
+                                            <input type="password" name="password_confirmation" class="form-control"
+                                                   placeholder="Confirm new password"
+                                                   id="editPasswordConfirmInput">
+                                            <div class="form-text">
+                                                <i class="fas fa-shield-alt me-1"></i>Re-enter password for confirmation
+                                            </div>
+                                            <div class="invalid-feedback" id="editPasswordConfirmError">
+                                                Passwords do not match.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Submit Button -->
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn bg-gradient-success" id="editSubmitBtn">
+                                            <i class="fas fa-save me-2"></i>Update User
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Users Table - Only show when not editing --}}
+                    @if(!isset($editUser))
                     <div class="card-body px-0 pt-0 pb-2">
                         <div class="table-responsive p-0">
                             <table class="table align-items-center mb-0">
                                 <thead>
                                     <tr>
-<<<<<<< HEAD
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Photo</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Phone</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Role</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Creation Date</th>
-=======
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                             <a href="{{ request()->fullUrlWithQuery(['sort' => 'id', 'direction' => request('direction') == 'asc' ? 'desc' : 'asc']) }}" class="text-dark text-decoration-none">
                                                 ID
@@ -351,7 +346,6 @@
                                                 @endif
                                             </a>
                                         </th>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Action</th>
                                     </tr>
                                 </thead>
@@ -363,15 +357,11 @@
                                         </td>
                                         <td>
                                             <div>
-<<<<<<< HEAD
-                                                <img src="{{ asset('assets/img/team-2.jpg') }}" class="avatar avatar-sm me-3" alt="{{ $user->name }}">
-=======
                                                 @if($user->profile_photo_path)
                                                     <img src="{{ asset('storage/' . $user->profile_photo_path) }}" class="avatar avatar-sm me-3" alt="{{ $user->name }}">
                                                 @else
                                                     <img src="{{ asset('assets/img/team-2.jpg') }}" class="avatar avatar-sm me-3" alt="{{ $user->name }}">
                                                 @endif
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                             </div>
                                         </td>
                                         <td class="text-center">
@@ -384,7 +374,7 @@
                                             <p class="text-xs font-weight-bold mb-0">{{ $user->phone ?? '-' }}</p>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge badge-sm 
+                                            <span class="badge badge-sm
                                                 @if($user->role == 'moderator') bg-gradient-info
                                                 @elseif($user->role == 'club_manager') bg-gradient-warning
                                                 @else bg-gradient-secondary @endif">
@@ -396,31 +386,22 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="d-flex justify-content-center align-items-center">
-<<<<<<< HEAD
-                                                {{-- ✅ BOUTON EDIT CORRIGÉ --}}
-                                                <a href="{{ route('users.edit', $user) }}" 
-=======
                                                 {{-- ✅ BOUTON EDIT INLINE CORRIGÉ --}}
-                                                <a href="{{ route('user-management', ['edit' => $user->id]) }}" 
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
+                                                <a href="{{ route('user-management', ['edit' => $user->id]) }}"
                                                    class="btn btn-outline-info btn-sm me-2"
-                                                   data-bs-toggle="tooltip" 
+                                                   data-bs-toggle="tooltip"
                                                    data-bs-original-title="Edit user">
                                                     <i class="fas fa-edit me-1"></i> Edit
                                                 </a>
-                                                
-<<<<<<< HEAD
-                                                {{-- ✅ BOUTON DELETE CORRIGÉ --}}
-=======
+
                                                 {{-- ✅ BOUTON DELETE --}}
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
-                                                <form action="{{ route('users.destroy', $user) }}" 
-                                                      method="POST" 
+                                                <form action="{{ route('users.destroy', $user) }}"
+                                                      method="POST"
                                                       class="d-inline"
                                                       onsubmit="return confirm('Are you sure you want to delete {{ $user->name }}?')">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" 
+                                                    <button type="submit"
                                                             class="btn btn-outline-danger btn-sm"
                                                             data-bs-toggle="tooltip"
                                                             data-bs-original-title="Delete user">
@@ -435,12 +416,8 @@
                                     @if($users->isEmpty())
                                     <tr>
                                         <td colspan="8" class="text-center py-4">
-<<<<<<< HEAD
-                                            <p class="text-xs text-secondary mb-0">No users found</p>
-=======
                                             <p class="text-xs text-secondary mb-0">No users found matching your criteria.</p>
                                             <a href="{{ route('user-management') }}" class="btn btn-sm bg-gradient-primary mt-2">Clear Filters</a>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                         </td>
                                     </tr>
                                     @endif
@@ -448,10 +425,7 @@
                             </table>
                         </div>
                     </div>
-<<<<<<< HEAD
-=======
                     @endif
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                 </div>
             </div>
         </div>
@@ -459,11 +433,6 @@
     </div>
 </main>
 
-<<<<<<< HEAD
-<script>
-// Activation des tooltips Bootstrap
-document.addEventListener('DOMContentLoaded', function() {
-=======
 <style>
 .form-control.is-valid {
     border-color: #28a745;
@@ -506,13 +475,77 @@ document.addEventListener('DOMContentLoaded', function() {
 .table th a:hover {
     color: #007bff;
 }
+
+/* Animation pour la section de recherche */
+#searchSection {
+    transition: all 0.3s ease-in-out;
+}
+
+#searchSection.show {
+    display: block !important;
+    animation: slideDown 0.3s ease-in-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Gestion du toggle de recherche
+    const toggleSearchBtn = document.getElementById('toggleSearchBtn');
+    const closeSearchBtn = document.getElementById('closeSearchBtn');
+    const searchSection = document.getElementById('searchSection');
+
+    // Toggle de la section de recherche
+    if (toggleSearchBtn && searchSection) {
+        toggleSearchBtn.addEventListener('click', function() {
+            if (searchSection.classList.contains('d-none')) {
+                // Afficher la recherche
+                searchSection.classList.remove('d-none');
+                searchSection.classList.add('show');
+                this.innerHTML = '<i class="fas fa-times me-1"></i>Hide Search';
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
+                
+                // Focus sur le premier champ de recherche
+                const firstInput = searchSection.querySelector('input, select');
+                if (firstInput) {
+                    setTimeout(function() { firstInput.focus(); }, 300);
+                }
+            } else {
+                // Cacher la recherche
+                searchSection.classList.add('d-none');
+                searchSection.classList.remove('show');
+                this.innerHTML = '<i class="fas fa-search me-1"></i>Search';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-outline-primary');
+            }
+        });
+    }
+
+    // Fermer la recherche avec le bouton X
+    if (closeSearchBtn && searchSection) {
+        closeSearchBtn.addEventListener('click', function() {
+            searchSection.classList.add('d-none');
+            searchSection.classList.remove('show');
+            toggleSearchBtn.innerHTML = '<i class="fas fa-search me-1"></i>Search';
+            toggleSearchBtn.classList.remove('btn-primary');
+            toggleSearchBtn.classList.add('btn-outline-primary');
+        });
+    }
+
     // Vérifier si le formulaire d'édition existe
     const editForm = document.getElementById('editUserForm');
-    
+
     if (editForm) {
         // Éléments du DOM pour l'édition
         const editNameInput = document.getElementById('editNameInput');
@@ -559,7 +592,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function updateEditNameCount() {
             const length = editNameInput.value.length;
             editNameCount.textContent = length;
-            
+
             if (length < 2) {
                 editNameCount.className = 'text-danger';
                 editNameStatus.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Too short</span>';
@@ -575,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function updateEditPasswordCount() {
             const length = editPasswordInput.value.length;
             editPasswordCount.textContent = length;
-            
+
             if (length > 0 && length < 8) {
                 editPasswordCount.className = 'text-danger';
                 editPasswordStatus.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Too short</span>';
@@ -592,7 +625,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function validateEditName() {
             const length = editNameInput.value.length;
             const isValid = length >= 2 && length <= 255;
-            
+
             if (!isValid) {
                 editNameInput.classList.add('is-invalid');
                 editNameInput.classList.remove('is-valid');
@@ -600,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 editNameInput.classList.remove('is-invalid');
                 editNameInput.classList.add('is-valid');
             }
-            
+
             updateEditSubmitButton();
             return isValid;
         }
@@ -609,7 +642,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const email = editEmailInput.value;
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const isValid = emailRegex.test(email);
-            
+
             if (!isValid) {
                 editEmailInput.classList.add('is-invalid');
                 editEmailInput.classList.remove('is-valid');
@@ -617,7 +650,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 editEmailInput.classList.remove('is-invalid');
                 editEmailInput.classList.add('is-valid');
             }
-            
+
             updateEditSubmitButton();
             return isValid;
         }
@@ -626,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const phone = editPhoneInput.value;
             // Phone is optional, so only validate if there's content
             const isValid = phone === '' || /^[0-9+\-\s()]{10,20}$/.test(phone);
-            
+
             if (!isValid) {
                 editPhoneInput.classList.add('is-invalid');
                 editPhoneInput.classList.remove('is-valid');
@@ -634,7 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 editPhoneInput.classList.remove('is-invalid');
                 editPhoneInput.classList.add('is-valid');
             }
-            
+
             return isValid;
         }
 
@@ -642,7 +675,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const password = editPasswordInput.value;
             // Password is optional, but if provided must be at least 8 chars
             const isValid = password === '' || password.length >= 8;
-            
+
             if (!isValid) {
                 editPasswordInput.classList.add('is-invalid');
                 editPasswordInput.classList.remove('is-valid');
@@ -650,7 +683,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 editPasswordInput.classList.remove('is-invalid');
                 editPasswordInput.classList.add('is-valid');
             }
-            
+
             updateEditSubmitButton();
             return isValid;
         }
@@ -660,7 +693,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const confirm = editPasswordConfirmInput.value;
             // Only validate if password is provided
             const isValid = password === '' || password === confirm;
-            
+
             if (!isValid) {
                 editPasswordConfirmInput.classList.add('is-invalid');
                 editPasswordConfirmInput.classList.remove('is-valid');
@@ -668,7 +701,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 editPasswordConfirmInput.classList.remove('is-invalid');
                 editPasswordConfirmInput.classList.add('is-valid');
             }
-            
+
             updateEditSubmitButton();
             return isValid;
         }
@@ -689,11 +722,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const isEmailValid = validateEditEmail();
             const isPasswordValid = validateEditPassword();
             const isPasswordConfirmValid = validateEditPasswordConfirm();
-            
+
             const isFormValid = isNameValid && isEmailValid && isPasswordValid && isPasswordConfirmValid;
-            
+
             editSubmitBtn.disabled = !isFormValid;
-            
+
             if (isFormValid) {
                 editSubmitBtn.classList.remove('btn-secondary');
                 editSubmitBtn.classList.add('bg-gradient-success');
@@ -715,7 +748,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Activation des tooltips Bootstrap
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)

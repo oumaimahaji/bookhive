@@ -12,26 +12,26 @@ use Carbon\Carbon;
 class UserPostController extends Controller
 {
     // Show user's own posts (separate page)
-    public function myPosts()
-    {
-        $user = Auth::user();
-        $posts = Post::with(['user', 'comments.user'])
-                    ->where('user_id', $user->id)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
+        public function myPosts()
+        {
+            $user = Auth::user();
+            $posts = Post::with(['user', 'comments.user', 'reactions.reaction']) // AJOUT: reactions.reaction
+                        ->where('user_id', $user->id)
+                        ->orderBy('created_at', 'desc')
+                        ->get();
 
-        return view('user.my-posts', compact('posts'));
-    }
+            return view('user.my-posts', compact('posts'));
+        }
 
     // Show all posts (community feed)
-    public function communityPosts()
-    {
-        $posts = Post::with(['user', 'comments.user'])
-                    ->orderBy('created_at', 'desc')
-                    ->get();
+        public function communityPosts()
+        {
+            $posts = Post::with(['user', 'comments.user', 'reactions.reaction']) // AJOUT: reactions.reaction
+                        ->orderBy('created_at', 'desc')
+                        ->get();
 
-        return view('posts.community', compact('posts'));
-    }
+            return view('posts.community', compact('posts'));
+        }
 
     // Store new post (user created) - AVEC IMAGE
     public function storePost(Request $request)
@@ -44,7 +44,10 @@ class UserPostController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('posts', 'public');
+            // Stocker l'image dans public/storage/posts/
+            $imageName = time().'_'.$request->file('image')->getClientOriginalName();
+            $request->file('image')->move(public_path('storage/posts'), $imageName);
+            $imagePath = 'posts/'.$imageName;
         }
 
         Post::create([
@@ -52,55 +55,65 @@ class UserPostController extends Controller
             'titre' => $request->titre,
             'contenu' => $request->contenu,
             'image' => $imagePath,
-            'date' => now()->toDateTimeString(),
+           
         ]);
 
         return redirect()->route('user.posts.my')->with('success', 'Post créé avec succès');
     }
 
-  // MÉTHODE UPDATE CRITIQUE - DANS UserPostController
-public function update(Request $request, Post $post)
-{
-    // Vérifier que l'utilisateur est bien le propriétaire du post
-    if ($post->user_id !== Auth::id()) {
-        abort(403, 'Unauthorized action.');
-    }
-
-    $request->validate([
-        'titre' => 'required|string|max:255',
-        'contenu' => 'required|string',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
-
-    // Préparer les données de mise à jour
-    $updateData = [
-        'titre' => $request->titre,
-        'contenu' => $request->contenu,
-    ];
-
-    // Gestion de la suppression d'image
-    if ($request->has('remove_image') && $request->remove_image == '1') {
-        if ($post->image) {
-            Storage::disk('public')->delete($post->image);
+    // MÉTHODE UPDATE CRITIQUE - DANS UserPostController
+    public function update(Request $request, Post $post)
+    {
+        // Vérifier que l'utilisateur est bien le propriétaire du post
+        if ($post->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
         }
-        $updateData['image'] = null;
-    }
 
-    // Gestion du nouvel upload d'image
-    if ($request->hasFile('image')) {
-        // Supprimer l'ancienne image si elle existe
-        if ($post->image) {
-            Storage::disk('public')->delete($post->image);
+        $request->validate([
+            'titre' => 'required|string|max:255',
+            'contenu' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Préparer les données de mise à jour
+        $updateData = [
+            'titre' => $request->titre,
+            'contenu' => $request->contenu,
+        ];
+
+        // Gestion de la suppression d'image
+        if ($request->has('remove_image') && $request->remove_image == '1') {
+            if ($post->image) {
+                // Supprimer l'image du dossier public/storage/posts/
+                $imagePath = public_path('storage/'.$post->image);
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+            $updateData['image'] = null;
         }
-        // Stocker la nouvelle image
-        $updateData['image'] = $request->file('image')->store('posts', 'public');
+
+        // Gestion du nouvel upload d'image
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($post->image) {
+                $oldImagePath = public_path('storage/'.$post->image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+            
+            // Stocker la nouvelle image dans public/storage/posts/
+            $imageName = time().'_'.$request->file('image')->getClientOriginalName();
+            $request->file('image')->move(public_path('storage/posts'), $imageName);
+            $updateData['image'] = 'posts/'.$imageName;
+        }
+
+        // Mettre à jour le post
+        $post->update($updateData);
+
+        return redirect()->route('user.posts.my')->with('success', 'Post updated successfully!');
     }
-
-    // Mettre à jour le post
-    $post->update($updateData);
-
-    return redirect()->route('user.posts.my')->with('success', 'Post updated successfully!');
-}
 
     // Store comment on any post
     public function storeComment(Request $request, $postId)
@@ -128,7 +141,10 @@ public function update(Request $request, Post $post)
 
         // Supprimer l'image si elle existe
         if ($post->image) {
-            Storage::disk('public')->delete($post->image);
+            $imagePath = public_path('storage/'.$post->image);
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
         }
 
         $post->delete();

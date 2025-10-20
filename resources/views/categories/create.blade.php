@@ -2,30 +2,6 @@
 
 @section('content')
 
-<<<<<<< HEAD
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4 mx-4">
-                <div class="card-header pb-0">
-                    <div class="d-flex flex-row justify-content-between">
-                        <h5 class="mb-0">Add New Category</h5>
-                        <a href="{{ route('categories.index') }}" class="btn bg-gradient-primary btn-sm mb-0">Back to List</a>
-                    </div>
-                </div>
-                <div class="card-body px-4 pt-4 pb-2">
-                    <form action="{{ route('categories.store') }}" method="POST">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label">Category Name</label>
-                            <input type="text" name="nom" class="form-control" placeholder="Enter category name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea name="description" class="form-control" rows="3" placeholder="Enter description"></textarea>
-                        </div>
-                        <button type="submit" class="btn bg-gradient-primary">Add Category</button>
-=======
 <div class="container-fluid" style="padding-top: 0.1rem;">
     <div class="row">
         <div class="col-12">
@@ -36,7 +12,7 @@
                     </div>
                 </div>
                 <div class="card-body px-3 pt-1 pb-2" style="padding: 0.6rem 1rem;">
-                    {{-- Affichage des erreurs --}}
+                    {{-- Error display --}}
                     @if ($errors->any())
                     <div class="alert alert-danger alert-dismissible fade show mb-2 py-1" role="alert" style="font-size: 0.8rem;">
                         <strong class="small">Please correct the following errors:</strong>
@@ -61,7 +37,7 @@
                                 title="Only letters, numbers, spaces, hyphens and underscores are allowed"
                                 required>
 
-                            {{-- Message de validation en temps réel --}}
+                            {{-- Real-time validation message --}}
                             <div id="validationMessage" class="mt-1 small"></div>
 
                             @error('nom')
@@ -86,9 +62,8 @@
                         </div>
                         <div class="d-flex gap-2 mt-2">
                             <button type="submit" id="submitBtn" class="btn bg-gradient-primary btn-sm py-1">Add Category</button>
-                            <a href="{{ route('categories.index') }}" class="btn bg-gradient-secondary btn-sm py-1">Annuler</a>
+                            <a href="{{ route('categories.index') }}" class="btn bg-gradient-secondary btn-sm py-1">Cancel</a>
                         </div>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                     </form>
                 </div>
             </div>
@@ -96,9 +71,6 @@
     </div>
 </div>
 
-<<<<<<< HEAD
-@endsection
-=======
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('categoryForm');
@@ -109,30 +81,30 @@
         const submitBtn = document.getElementById('submitBtn');
         let validationTimeout;
 
-        // ✅ NOUVEAU : Validation en temps réel du nom de catégorie
+        // ✅ NEW: Real-time category name validation
         categoryNameField.addEventListener('input', function() {
             const categoryName = this.value.trim();
 
-            // Effacer le message précédent
+            // Clear previous message
             validationMessage.textContent = '';
             validationMessage.className = 'mt-1 small';
 
-            // Désactiver le bouton pendant la validation
+            // Disable button during validation
             submitBtn.disabled = true;
 
-            // Annuler la validation précédente
+            // Cancel previous validation
             clearTimeout(validationTimeout);
 
-            // Attendre que l'utilisateur arrête de taper (500ms)
+            // Wait for user to stop typing (500ms)
             validationTimeout = setTimeout(() => {
                 if (categoryName.length < 2) {
-                    validationMessage.textContent = 'Le nom doit avoir au moins 2 caractères';
+                    validationMessage.textContent = 'Name must be at least 2 characters long';
                     validationMessage.className = 'mt-1 small text-warning';
                     submitBtn.disabled = true;
                     return;
                 }
 
-                // Appeler l'API de validation
+                // Call validation API
                 fetch('{{ route("categories.validate") }}', {
                         method: 'POST',
                         headers: {
@@ -146,25 +118,25 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.valid) {
-                            validationMessage.textContent = '✓ Nom disponible';
+                            validationMessage.textContent = '✓ Name available';
                             validationMessage.className = 'mt-1 small text-success';
                             submitBtn.disabled = false;
                         } else {
-                            validationMessage.textContent = '❌ ' + (data.errors.nom ? data.errors.nom[0] : 'Erreur de validation');
+                            validationMessage.textContent = '❌ ' + (data.errors.nom ? data.errors.nom[0] : 'Validation error');
                             validationMessage.className = 'mt-1 small text-danger';
                             submitBtn.disabled = true;
                         }
                     })
                     .catch(error => {
-                        console.error('Erreur:', error);
-                        validationMessage.textContent = 'Erreur de validation';
+                        console.error('Error:', error);
+                        validationMessage.textContent = 'Validation error';
                         validationMessage.className = 'mt-1 small text-danger';
                         submitBtn.disabled = false;
                     });
-            }, 500); // Délai de 500ms après la frappe
+            }, 500); // 500ms delay after typing
         });
 
-        // Compteur de caractères pour la description
+        // Character counter for description
         if (descriptionField && charCount) {
             // Initial count
             charCount.textContent = descriptionField.value.length;
@@ -191,7 +163,7 @@
             });
         }
 
-        // Validation du nom de catégorie (nettoyage)
+        // Category name validation (cleaning)
         if (categoryNameField) {
             categoryNameField.addEventListener('input', function() {
                 // Remove special characters except allowed ones
@@ -204,12 +176,12 @@
             });
         }
 
-        // Validation du formulaire avant soumission
+        // Form validation before submission
         form.addEventListener('submit', function(e) {
             let isValid = true;
             const errors = [];
 
-            // Validation du nom
+            // Name validation
             const nomValue = categoryNameField.value.trim();
             if (!nomValue) {
                 isValid = false;
@@ -227,7 +199,7 @@
                 categoryNameField.classList.remove('is-invalid');
             }
 
-            // Validation de la description
+            // Description validation
             const descValue = descriptionField.value.trim();
             if (descValue.length > 500) {
                 isValid = false;
@@ -240,7 +212,7 @@
             if (!isValid) {
                 e.preventDefault();
 
-                // Afficher les erreurs
+                // Display errors
                 let errorMessage = 'Please correct the following errors:\n';
                 errors.forEach(error => {
                     errorMessage += `• ${error}\n`;
@@ -291,7 +263,7 @@
         border-color: #dc3545 !important;
     }
 
-    /* Réduction maximale des espacements */
+    /* Maximum spacing reduction */
     .card {
         margin-top: 0;
         margin-bottom: 0;
@@ -301,23 +273,23 @@
         padding: 0.5rem 1rem !important;
     }
 
-    /* Suppression des espacements supplémentaires */
+    /* Remove extra spacing */
     .container-fluid {
         min-height: auto;
         padding-top: 0.1rem !important;
     }
 
-    /* Réduction de l'espace dans le header de la card */
+    /* Reduce card header spacing */
     .card-header {
         padding: 0.4rem 1rem !important;
     }
 
-    /* Réduction des marges des labels */
+    /* Reduce label margins */
     .form-label {
         margin-bottom: 0.3rem !important;
     }
 
-    /* Réduction de l'alerte */
+    /* Reduce alert size */
     .alert {
         margin-bottom: 0.8rem !important;
         padding: 0.4rem 0.8rem !important;
@@ -325,4 +297,3 @@
 </style>
 
 @endsection
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)

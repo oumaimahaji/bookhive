@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 
 @extends('layouts.user_type.auth')
 
@@ -387,7 +387,7 @@
 
 @endsection
 
-=======
+
 @extends('layouts.user_type.auth')
 
 @section('content')
@@ -859,4 +859,4 @@
   });
 </script>
 @endsection
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
+

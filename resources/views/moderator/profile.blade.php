@@ -5,7 +5,7 @@
     <div class="container-fluid">
         <!-- Header avec image de fond -->
         <div class="page-header min-height-300 border-radius-xl mt-4" style="background-image: url('../assets/img/curved-images/curved0.jpg'); background-position-y: 50%;">
-            <span class="mask bg-gradient-info opacity-6"></span>
+            <span class="mask bg-gradient-success opacity-6"></span>
         </div>
 
         <!-- Carte profil -->
@@ -26,7 +26,7 @@
                             {{ auth()->user()->name }}
                         </h5>
                         <p class="mb-0 font-weight-bold text-sm">
-                            🛡️ {{ ucfirst(auth()->user()->role) }} • Moderator since {{ auth()->user()->created_at->format('M Y') }}
+                            📚 {{ ucfirst(auth()->user()->role) }} • Moderator since {{ auth()->user()->created_at->format('M Y') }}
                         </p>
                     </div>
                 </div>
@@ -54,29 +54,45 @@
 
     <div class="container-fluid py-4">
         <div class="row">
-            <!-- Colonne gauche - Paramètres -->
+            <!-- Colonne gauche - Paramètres du modérateur -->
             <div class="col-12 col-xl-4">
                 <div class="card h-100">
                     <div class="card-header pb-0 p-3">
                         <h6 class="mb-0">Moderator Settings</h6>
                     </div>
                     <div class="card-body p-3">
-                        <h6 class="text-uppercase text-body text-xs font-weight-bolder">Moderation</h6>
+                        <h6 class="text-uppercase text-body text-xs font-weight-bolder">Book Management</h6>
                         <ul class="list-group">
                             <li class="list-group-item border-0 px-0">
                                 <div class="form-check form-switch ps-0">
-                                    <input class="form-check-input ms-auto" type="checkbox" id="moderationAlerts" checked>
-                                    <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0" for="moderationAlerts">
-                                        Alert me for content moderation
+                                    <input class="form-check-input ms-auto" type="checkbox" id="bookNotifications" checked>
+                                    <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0" for="bookNotifications">
+                                        Book validation notifications
                                     </label>
                                 </div>
                             </li>
                             <li class="list-group-item border-0 px-0">
                                 <div class="form-check form-switch ps-0">
-                                    <input class="form-check-input ms-auto" type="checkbox" id="bookValidation" checked>
-                                    <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0" for="bookValidation">
-                                        Notify for book validation
+                                    <input class="form-check-input ms-auto" type="checkbox" id="emailAlerts" checked>
+                                    <label class="form-check-label text-body ms-3 text-truncate w-80 mb-0" for="emailAlerts">
+                                        Email alerts for new books
                                     </label>
+                                </div>
+                            </li>
+                        </ul>
+                        
+                        <h6 class="text-uppercase text-body text-xs font-weight-bolder mt-4">Statistics</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item border-0 px-0">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-book text-success me-2"></i>
+                                    <span class="text-sm">Books validated this month: <strong>24</strong></span>
+                                </div>
+                            </li>
+                            <li class="list-group-item border-0 px-0">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-clock text-warning me-2"></i>
+                                    <span class="text-sm">Pending books: <strong>{{ \App\Models\Book::where('is_valid', false)->count() }}</strong></span>
                                 </div>
                             </li>
                         </ul>
@@ -99,6 +115,14 @@
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <i class="fas fa-exclamation-circle me-2"></i>
                     {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                @endif
+
+                @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Please check the form below for errors.
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
                 @endif
@@ -142,7 +166,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="phone" class="form-control-label">Phone</label>
-                                                <input class="form-control" type="text" id="phone" name="phone" value="{{ old('phone', auth()->user()->phone) }}">
+                                                <input class="form-control" type="text" id="phone" name="phone" value="{{ old('phone', auth()->user()->phone ?? '') }}">
                                                 @error('phone')
                                                 <div class="text-danger text-xs">{{ $message }}</div>
                                                 @enderror
@@ -230,7 +254,6 @@
 </div>
 
 <script>
-    // Le même script que pour user
     document.addEventListener('DOMContentLoaded', function() {
         // Toggle password visibility
         document.querySelectorAll('.toggle-password').forEach(function(toggle) {
@@ -293,6 +316,36 @@
                 document.querySelector(target).classList.add('show', 'active');
             });
         });
+
+        // Form validation
+        const profileForm = document.getElementById('profileForm');
+        if (profileForm) {
+            profileForm.addEventListener('submit', function(e) {
+                const name = document.getElementById('name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                
+                if (!name || !email) {
+                    e.preventDefault();
+                    alert('Please fill in all required fields.');
+                }
+            });
+        }
     });
 </script>
+
+<style>
+    .toggle-password {
+        cursor: pointer;
+        background-color: #f8f9fa;
+        border: 1px solid #d2d6da;
+        border-left: none;
+    }
+    .toggle-password:hover {
+        background-color: #e9ecef;
+    }
+    .form-control:focus + .input-group-text {
+        border-color: #cb0c9f;
+        box-shadow: 0 0 0 2px rgba(203, 12, 159, 0.25);
+    }
+</style>
 @endsection

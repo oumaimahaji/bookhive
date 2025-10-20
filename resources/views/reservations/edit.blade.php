@@ -101,6 +101,58 @@
                                 <button type="submit" class="btn btn-primary">Modifier la Réservation</button>
                             </div>
                         </form>
+
+                        @if($reservation->statut === 'confirmee' && $reservation->user_id === Auth::id())
+                        <!-- Section pour ajouter un avis -->
+                        <div class="card border-success mb-4 mt-4">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="fas fa-star me-2"></i>Laisser un avis</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Votre réservation a été confirmée ! Vous pouvez maintenant laisser un avis sur ce livre.
+                                </div>
+
+                                @php
+                                    $existingReview = \App\Models\Review::where('user_id', Auth::id())->where('book_id', $reservation->book_id)->first();
+                                @endphp
+
+                                @if($existingReview)
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Vous avez déjà laissé un avis pour ce livre.
+                                    </div>
+                                @else
+                                    <form action="{{ route('reviews.store') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="book_id" value="{{ $reservation->book_id }}">
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Note globale <span class="text-danger">*</span></label>
+                                            <select name="note" class="form-control" required>
+                                                <option value="">Choisissez votre note</option>
+                                                <option value="1">⭐ - Très mauvais</option>
+                                                <option value="2">⭐⭐ - Mauvais</option>
+                                                <option value="3">⭐⭐⭐ - Moyen</option>
+                                                <option value="4">⭐⭐⭐⭐ - Bon</option>
+                                                <option value="5">⭐⭐⭐⭐⭐ - Excellent</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Votre commentaire</label>
+                                            <textarea name="commentaire" class="form-control" rows="5" placeholder="Partagez votre expérience de lecture..."></textarea>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-success btn-lg">
+                                            <i class="fas fa-paper-plane me-2"></i>Publier l'avis
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

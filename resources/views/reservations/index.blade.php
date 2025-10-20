@@ -5,13 +5,9 @@
     <div class="container-fluid py-4">
         <div class="row mb-3">
             <div class="col-12 text-end">
-<<<<<<< HEAD
-                <a href="{{ route('reservations.create') }}" class="btn btn-primary">Nouvelle Réservation</a>
-=======
                 @if(Auth::user()->role !== 'admin')
                 <a href="{{ route('reservations.create') }}" class="btn btn-primary">Nouvelle Réservation</a>
                 @endif
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
             </div>
         </div>
 
@@ -99,8 +95,6 @@
         </div>
         @endif
 
-<<<<<<< HEAD
-=======
         {{-- Filtres et Tri --}}
         <div class="row mb-4">
             <div class="col-12">
@@ -373,7 +367,6 @@
             });
         </script>
 
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         {{-- Tableau des réservations --}}
         <div class="row">
             <div class="col-12">
@@ -432,15 +425,50 @@
                                             </span>
                                         </td>
                                         <td class="align-middle">
-                                            <a href="{{ route('reservations.index', ['edit' => $reservation->id]) }}"
-                                               class="text-secondary font-weight-bold text-xs me-2">Modifier</a>
-                                            @if(Auth::user()->role === 'admin')
-                                            <form action="{{ route('reservations.destroy', $reservation->id) }}" method="POST" style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="text-danger font-weight-bold text-xs border-0 bg-transparent" onclick="return confirm('Êtes-vous sûr?')">Supprimer</button>
-                                            </form>
-                                            @endif
+                                            <div class="d-flex flex-column gap-1">
+                                                <a href="{{ route('reservations.index', ['edit' => $reservation->id]) }}"
+                                                   class="text-secondary font-weight-bold text-xs">Modifier</a>
+
+                                                @if(Auth::user()->role === 'admin' || Auth::user()->role === 'moderator')
+                                                    @if($reservation->statut === 'en_attente')
+                                                        <form action="{{ route('reservations.update', $reservation->id) }}" method="POST" style="display:inline;">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <input type="hidden" name="statut" value="confirmee">
+                                                            <button type="submit" class="text-success font-weight-bold text-xs border-0 bg-transparent">
+                                                                <i class="fas fa-check me-1"></i>Confirmer
+                                                            </button>
+                                                        </form>
+                                                    @endif
+
+                                                    @if($reservation->statut === 'confirmee')
+                                                        <form action="{{ route('reservations.markReturned', $reservation->id) }}" method="POST" style="display:inline;">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <button type="submit" class="text-warning font-weight-bold text-xs border-0 bg-transparent">
+                                                                <i class="fas fa-undo me-1"></i>Marquer retourné
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                @endif
+
+                                                @if($reservation->statut === 'confirmee' && $reservation->book->pdf_path && $reservation->user_id === Auth::id())
+                                                    <a href="{{ route('books.download', $reservation->book) }}"
+                                                       class="text-primary font-weight-bold text-xs" target="_blank">
+                                                        <i class="fas fa-download me-1"></i>Télécharger PDF
+                                                    </a>
+                                                @endif
+
+                                                @if(Auth::user()->role === 'admin')
+                                                    <form action="{{ route('reservations.destroy', $reservation->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="text-danger font-weight-bold text-xs border-0 bg-transparent" onclick="return confirm('Êtes-vous sûr?')">
+                                                            <i class="fas fa-trash me-1"></i>Supprimer
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                     @empty

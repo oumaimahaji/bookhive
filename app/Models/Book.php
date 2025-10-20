@@ -9,25 +9,17 @@ class Book extends Model
 {
     use HasFactory;
 
-<<<<<<< HEAD
-    protected $fillable = ['titre', 'auteur', 'description', 'category_id', 'type', 'is_valid'];
-
-   
-=======
     protected $fillable = [
         'titre',
         'auteur',
         'description',
         'category_id',
-        'type',
+        
         'is_valid',
         'user_id',
         'pdf_path',
         'cover_image',
     ];
-
-
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 
     public function category()
     {
@@ -43,6 +35,7 @@ class Book extends Model
     {
         return $this->hasMany(Review::class);
     }
+
     // Scope pour les livres validés
     public function scopeValid($query)
     {
@@ -53,8 +46,4 @@ class Book extends Model
     {
         return $this->hasMany(History::class);
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)

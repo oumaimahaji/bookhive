@@ -4,10 +4,6 @@
 <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ">
     <div class="container-fluid py-4">
         <div class="row mb-3">
-<<<<<<< HEAD
-            <div class="col-12 text-end">
-                <a href="{{ route('club_manager.clubs.create') }}" class="btn btn-primary">Ajouter un Club</a>
-=======
             <div class="col-6">
                 <h4>Mes Clubs de Lecture</h4>
             </div>
@@ -15,16 +11,10 @@
                 <button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#createClubForm">
                     Ajouter un Club
                 </button>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
             </div>
         </div>
 
         @if(session('success'))
-<<<<<<< HEAD
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-=======
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -74,7 +64,6 @@
             </div>
         </div>
 
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         {{-- Formulaire d'édition inline --}}
         @if(isset($editClub))
         <div class="row mb-4">
@@ -91,22 +80,6 @@
                                 <div class="col-md-6 mb-3">
                                     <label for="nom" class="form-label">Nom du Club</label>
                                     <input type="text" name="nom" class="form-control" value="{{ old('nom', $editClub->nom) }}" required>
-<<<<<<< HEAD
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="createur_id" class="form-label">Créateur</label>
-                                    <select name="createur_id" class="form-control" required>
-                                        @foreach($users as $user)
-                                            <option value="{{ $user->id }}" {{ $editClub->createur_id == $user->id ? 'selected' : '' }}>
-                                                {{ $user->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-12 mb-3">
-                                    <label for="description" class="form-label">Description</label>
-                                    <textarea name="description" class="form-control" rows="4">{{ old('description', $editClub->description) }}</textarea>
-=======
                                     @error('nom')
                                         <div class="text-danger text-sm">{{ $message }}</div>
                                     @enderror
@@ -126,7 +99,6 @@
                                     @error('description')
                                         <div class="text-danger text-sm">{{ $message }}</div>
                                     @enderror
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-success">Modifier le Club</button>
@@ -154,11 +126,7 @@
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Créateur</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Événements</th>
-<<<<<<< HEAD
-                                        <th class="text-secondary opacity-7">Actions</th>
-=======
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -182,18 +150,6 @@
                                                 {{ $club->evenements_count ?? $club->evenements->count() }}
                                             </span>
                                         </td>
-<<<<<<< HEAD
-                                        <td class="align-middle">
-                                            <a href="{{ route('club_manager.clubs.index', ['edit' => $club->id]) }}"
-                                               class="text-secondary font-weight-bold text-xs me-2">Modifier</a>
-                                            <a href="{{ route('club_manager.events.index') }}?club_id={{ $club->id }}"
-                                               class="text-info font-weight-bold text-xs me-2">Événements</a>
-                                            <form action="{{ route('club_manager.clubs.destroy', $club->id) }}" method="POST" style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="text-danger font-weight-bold text-xs border-0 bg-transparent" onclick="return confirm('Êtes-vous sûr?')">Supprimer</button>
-                                            </form>
-=======
                                         <td class="align-middle text-center">
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route('club_manager.clubs.index', ['edit' => $club->id]) }}"
@@ -217,7 +173,6 @@
                                                     </button>
                                                 </form>
                                             </div>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                                         </td>
                                     </tr>
                                     @empty
@@ -234,9 +189,6 @@
         </div>
     </div>
 </main>
-<<<<<<< HEAD
-@endsection
-=======
 @endsection
 
 @push('scripts')
@@ -256,4 +208,3 @@
     @endif
 </script>
 @endpush
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)

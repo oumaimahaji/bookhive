@@ -177,7 +177,7 @@
                             <div>
                                 <h3 class="font-semibold text-gray-900">{{ $post->user->name }}</h3>
                                 <p class="text-sm text-gray-500">
-                                    {{ \Carbon\Carbon::parse($post->date)->diffForHumans() }}
+                                    {{ $post->created_at->diffForHumans() }}
                                 </p>
                             </div>
                         </div>
@@ -291,30 +291,131 @@
                     </form>
                 </div>
 
-                <!-- Post Stats -->
-                <div class="px-6 py-3 border-t border-gray-100 text-sm text-gray-500">
-                    {{ $post->comments->count() }} {{ Str::plural('comment', $post->comments->count()) }}
-                </div>
+               <!-- Composant Réactions -->
+@include('components.reactions', ['post' => $post])
 
-                <!-- Comment Form -->
-                <div class="comment-box p-4">
-                    <form action="{{ route('user.comments.store', $post->id) }}" method="POST" class="flex gap-3">
-                        @csrf
-                        <div class="flex-1">
-                            <input type="text" name="contenu" required 
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   placeholder="Write a comment...">
-                        </div>
-                        <button type="submit" 
-                                class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
+<!-- Comment Form -->
+<div class="comment-box p-4 comment-section" id="comment-section-{{ $post->id }}" style="display: none;">
+    <form action="{{ route('user.comments.store', $post->id) }}" method="POST" class="flex gap-3">
+        @csrf
+        <div class="flex-1">
+            <input type="text" name="contenu" required 
+                   class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Write a comment...">
+        </div>
+        <button type="submit" 
+                class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </form>
+</div>
 
-                <!-- Comments List -->
+<!-- Recent Comments - VISIBLE PAR DÉFAUT (2-3 derniers commentaires) -->
+@if($post->comments->count() > 0)
+<div class="comment-box p-4 pt-2 space-y-3" id="recent-comments-{{ $post->id }}">
+    @php
+        // Prendre les 2 derniers commentaires
+        $recentComments = $post->comments->sortByDesc('created_at')->take(2);
+    @endphp
+    
+    @foreach($recentComments as $comment)
+    <div class="flex gap-3 group">
+        <div class="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            {{ substr($comment->user->name, 0, 1) }}
+        </div>
+        <div class="flex-1">
+            <div class="bg-gray-100 rounded-2xl px-4 py-2">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-gray-900 text-sm">
+                        {{ $comment->user->name }}
+                    </span>
+                    @if($comment->user_id === Auth::id())
+                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                        You
+                    </span>
+                    @endif
+                </div>
+                <p class="text-gray-700 text-sm">{{ $comment->contenu }}</p>
+            </div>
+            <div class="flex items-center gap-4 mt-1 px-1">
+                <span class="text-xs text-gray-500">
+                    {{ $comment->created_at->diffForHumans() }}
+                </span>
+                @if($comment->user_id === Auth::id())
+                <form action="{{ route('user.comments.delete', $comment) }}" method="POST"
+                      onsubmit="return confirm('Delete this comment?')" class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-xs text-red-600 hover:text-red-800 transition-colors">
+                        Delete
+                    </button>
+                </form>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endforeach
+</div>
+@endif
+
+<!-- All Comments - CACHÉE PAR DÉFAUT -->
+@if($post->comments->count() > 2)
+<div class="comment-box p-4 pt-2 space-y-3" style="display: none;" id="all-comments-{{ $post->id }}">
+    @foreach($post->comments->sortByDesc('created_at') as $comment)
+    <div class="flex gap-3 group">
+        <div class="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            {{ substr($comment->user->name, 0, 1) }}
+        </div>
+        <div class="flex-1">
+            <div class="bg-gray-100 rounded-2xl px-4 py-2">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-gray-900 text-sm">
+                        {{ $comment->user->name }}
+                    </span>
+                    @if($comment->user_id === Auth::id())
+                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                        You
+                    </span>
+                    @endif
+                </div>
+                <p class="text-gray-700 text-sm">{{ $comment->contenu }}</p>
+            </div>
+            <div class="flex items-center gap-4 mt-1 px-1">
+                <span class="text-xs text-gray-500">
+                    {{ $comment->created_at->diffForHumans() }}
+                </span>
+                @if($comment->user_id === Auth::id())
+                <form action="{{ route('user.comments.delete', $comment) }}" method="POST"
+                      onsubmit="return confirm('Delete this comment?')" class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-xs text-red-600 hover:text-red-800 transition-colors">
+                        Delete
+                    </button>
+                </form>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endforeach
+</div>
+@endif
+
+<!-- View All Comments Link - SEULEMENT SI IL Y A PLUS DE 2 COMMENTAIRES -->
+@if($post->comments->count() > 2)
+<div class="comment-box p-4 pt-2 border-t border-gray-200">
+    <button class="text-sm text-blue-600 hover:text-blue-800 font-medium view-all-comments-btn" 
+            data-post-id="{{ $post->id }}"
+            data-total-comments="{{ $post->comments->count() }}"
+            onclick="toggleAllComments('{{ $post->id }}')">
+        View all {{ $post->comments->count() }} comments
+    </button>
+</div>
+@endif
+
+                <!-- Comments List - CACHÉE PAR DÉFAUT -->
                 @if($post->comments->count() > 0)
-                <div class="comment-box p-4 pt-2 space-y-3">
+                <div class="comment-box p-4 pt-2 space-y-3" style="display: none;" id="comments-list-{{ $post->id }}">
                     @foreach($post->comments as $comment)
                     <div class="flex gap-3 group">
                         <div class="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
@@ -336,7 +437,7 @@
                             </div>
                             <div class="flex items-center gap-4 mt-1 px-1">
                                 <span class="text-xs text-gray-500">
-                                    {{ \Carbon\Carbon::parse($comment->date)->diffForHumans() }}
+                                    {{ $comment->created_at->diffForHumans() }}
                                 </span>
                                 @if($comment->user_id === Auth::id())
                                 <form action="{{ route('user.comments.delete', $comment) }}" method="POST"

@@ -259,137 +259,151 @@
                 <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
                         <table class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'title', 'direction' => request('direction') == 'asc' ? 'desc' : 'asc']) }}" class="text-dark">
-                                            Title & Image
-                                            @if(request('sort') == 'title')
-                                                <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }}"></i>
-                                            @else
-                                                <i class="fas fa-sort"></i>
-                                            @endif
-                                        </a>
-                                    </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'user', 'direction' => request('direction') == 'asc' ? 'desc' : 'asc']) }}" class="text-dark">
-                                            User
-                                            @if(request('sort') == 'user')
-                                                <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }}"></i>
-                                            @else
-                                                <i class="fas fa-sort"></i>
-                                            @endif
-                                        </a>
-                                    </th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'date', 'direction' => request('direction') == 'asc' ? 'desc' : 'asc']) }}" class="text-dark">
-                                            Date
-                                            @if(request('sort') == 'date')
-                                                <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }}"></i>
-                                            @else
-                                                <i class="fas fa-sort"></i>
-                                            @endif
-                                        </a>
-                                    </th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Comments</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($posts as $post)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex px-2 py-1">
-                                            <!-- Image Thumbnail -->
-                                            @if($post->image)
-                                            <div class="me-3">
-                                                <img src="{{ asset('storage/' . $post->image) }}" 
-                                                     class="rounded cursor-pointer" 
-                                                     style="width: 60px; height: 60px; object-fit: cover;"
-                                                     alt="Post image"
-                                                     data-bs-toggle="tooltip"
-                                                     data-bs-title="Click to view larger"
-                                                     onclick="openImageModal(this.src)">
-                                            </div>
-                                            @else
-                                            <div class="me-3">
-                                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                                                     style="width: 60px; height: 60px;">
-                                                    <i class="fas fa-image text-muted"></i>
-                                                </div>
-                                            </div>
-                                            @endif
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="mb-0 text-sm">{{ $post->titre }}</h6>
-                                                <p class="text-xs text-secondary mb-0">{{ Str::limit($post->contenu, 50) }}</p>
-                                                @if($post->image)
-                                                <small class="text-info">
-                                                    <i class="fas fa-image me-1"></i>Has image
-                                                </small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="d-flex flex-column">
-                                                <h6 class="mb-0 text-sm">{{ $post->user->name ?? 'N/A' }}</h6>
-                                                <p class="text-xs text-secondary mb-0">{{ $post->user->email ?? '' }}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <span class="badge badge-sm bg-gradient-dark">
-                                            {{ \Carbon\Carbon::parse($post->date)->format('M d, Y') }}
-                                        </span>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <span class="badge badge-sm bg-gradient-info mb-1">
-                                                {{ $post->comments->count() }} comments
-                                            </span>
-                                            @if($post->comments->count() > 0)
-                                            <a href="{{ route('comments.index', ['post_id' => $post->id]) }}" 
-                                               class="btn btn-sm bg-gradient-primary text-xs"
-                                               title="View all comments for this post">
-                                                <i class="fas fa-comments me-1"></i>View Comments
-                                            </a>
-                                            @else
-                                            <span class="text-muted text-xs">No comments</span>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ route('posts.index', ['edit' => $post->id]) }}"
-                                               class="btn btn-sm bg-gradient-info me-1"
-                                               title="Edit post">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('posts.destroy', $post->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm bg-gradient-danger" 
-                                                        onclick="return confirm('Are you sure you want to delete this post?')" 
-                                                        title="Delete post">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center p-4">
-                                            <div class="text-muted">
-                                                <i class="fas fa-inbox fa-2x mb-3"></i>
-                                                <p>No posts found matching your criteria.</p>
-                                                <a href="{{ route('posts.index') }}" class="btn btn-sm bg-gradient-primary">Clear Filters</a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
+<thead>
+    <tr>
+        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            <a href="{{ request()->fullUrlWithQuery(['sort' => 'title', 'direction' => request('direction') == 'asc' ? 'desc' : 'asc']) }}" class="text-dark">
+                Title & Image
+                @if(request('sort') == 'title')
+                    <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }}"></i>
+                @else
+                    <i class="fas fa-sort"></i>
+                @endif
+            </a>
+        </th>
+        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+            <a href="{{ request()->fullUrlWithQuery(['sort' => 'user', 'direction' => request('direction') == 'asc' ? 'desc' : 'asc']) }}" class="text-dark">
+                User
+                @if(request('sort') == 'user')
+                    <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }}"></i>
+                @else
+                    <i class="fas fa-sort"></i>
+                @endif
+            </a>
+        </th>
+        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            <a href="{{ request()->fullUrlWithQuery(['sort' => 'date', 'direction' => request('direction') == 'asc' ? 'desc' : 'asc']) }}" class="text-dark">
+                Date
+                @if(request('sort') == 'date')
+                    <i class="fas fa-sort-{{ request('direction') == 'asc' ? 'up' : 'down' }}"></i>
+                @else
+                    <i class="fas fa-sort"></i>
+                @endif
+            </a>
+        </th>
+        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            Comments
+        </th>
+        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+            Reactions
+        </th>
+        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+    </tr>
+</thead>
+
+<tbody>
+    @forelse ($posts as $post)
+    <tr>
+        <td>
+            <div class="d-flex px-2 py-1">
+                <!-- Image Thumbnail -->
+                @if($post->image)
+                <div class="me-3">
+                    <img src="{{ asset('storage/' . $post->image) }}" 
+                         class="rounded cursor-pointer" 
+                         style="width: 60px; height: 60px; object-fit: cover;"
+                         alt="Post image"
+                         data-bs-toggle="tooltip"
+                         data-bs-title="Click to view larger"
+                         onclick="openImageModal(this.src)">
+                </div>
+                @else
+                <div class="me-3">
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                         style="width: 60px; height: 60px;">
+                        <i class="fas fa-image text-muted"></i>
+                    </div>
+                </div>
+                @endif
+                <div class="d-flex flex-column justify-content-center">
+                    <h6 class="mb-0 text-sm">{{ $post->titre }}</h6>
+                    <p class="text-xs text-secondary mb-0">{{ Str::limit($post->contenu, 50) }}</p>
+                    @if($post->image)
+                    <small class="text-info">
+                        <i class="fas fa-image me-1"></i>Has image
+                    </small>
+                    @endif
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="d-flex align-items-center">
+                <div class="d-flex flex-column">
+                    <h6 class="mb-0 text-sm">{{ $post->user->name ?? 'N/A' }}</h6>
+                    <p class="text-xs text-secondary mb-0">{{ $post->user->email ?? '' }}</p>
+                </div>
+            </div>
+        </td>
+        <td class="align-middle text-center">
+            <span class="badge badge-sm bg-gradient-dark">
+                {{ \Carbon\Carbon::parse($post->created_at)->format('M d, Y') }}
+            </span>
+        </td>
+        <td class="align-middle text-center">
+            @if(($post->comments_count ?? $post->comments->count()) > 0)
+            <a href="{{ route('comments.index', ['post_id' => $post->id]) }}" 
+               class="badge badge-sm bg-gradient-info cursor-pointer"
+               title="Click to view comments"
+               style="text-decoration: none;">
+                {{ $post->comments_count ?? $post->comments->count() }} comments
+            </a>
+            @else
+            <span class="badge badge-sm bg-gradient-secondary">0 comments</span>
+            @endif
+        </td>
+        <td class="align-middle text-center">
+            @if($post->reactions_count > 0)
+            <a href="{{ route('admin.posts.reactions.index', ['post_id' => $post->id]) }}" 
+               class="badge badge-sm bg-gradient-success cursor-pointer"
+               title="Click to view reactions"
+               style="text-decoration: none;">
+                {{ $post->reactions_count }} reactions
+            </a>
+            @else
+            <span class="badge badge-sm bg-gradient-secondary">0 reactions</span>
+            @endif
+        </td>
+        <td class="align-middle text-center">
+            <div class="btn-group" role="group">
+                <a href="{{ route('posts.index', ['edit' => $post->id]) }}"
+                   class="btn btn-sm bg-gradient-info me-1"
+                   title="Edit post">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <form action="{{ route('posts.destroy', $post->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm bg-gradient-danger" 
+                            onclick="return confirm('Are you sure you want to delete this post?')" 
+                            title="Delete post">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </td>
+    </tr>
+    @empty
+    <tr>
+        <td colspan="6" class="text-center p-4">
+            <div class="text-muted">
+                <i class="fas fa-inbox fa-2x mb-3"></i>
+                <p>No posts found matching your criteria.</p>
+                <a href="{{ route('posts.index') }}" class="btn btn-sm bg-gradient-primary">Clear Filters</a>
+            </div>
+        </td>
+    </tr>
+    @endforelse
+</tbody>
                         </table>
                     </div>
                     
@@ -508,6 +522,15 @@
 /* Style pour la pagination */
 .pagination {
     margin-bottom: 0;
+}
+.cursor-pointer {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cursor-pointer:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 </style>
 

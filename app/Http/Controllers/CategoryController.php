@@ -4,65 +4,45 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
-<<<<<<< HEAD
-=======
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Validator;
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-    // Affiche la liste des catégories
-<<<<<<< HEAD
-   public function index(Request $request)
-{
-    $categories = Category::withCount('books')->get();
-    $editCategory = null;
-
-    if ($request->has('edit')) {
-        $editCategory = Category::find($request->input('edit'));
-    }
-
-    return view('categories.index', compact('categories', 'editCategory'));
-}
-
-=======
+    // ✅ Affiche la liste des catégories (avec recherche, tri et pagination avancées)
     public function index(Request $request)
     {
         $query = Category::withCount('books');
 
-        // RECHERCHE AVANCÉE
+        // RECHERCHE PAR NOM
         $search_query = $request->get('search', '');
         if ($search_query) {
-            $query->where(function($q) use ($search_query) {
-                $q->where('nom', 'like', "%{$search_query}%")
-                  ->orWhere('description', 'like', "%{$search_query}%");
-            });
+            $query->where('nom', 'like', "%{$search_query}%");
         }
 
         // TRI AVANCÉ
         $sort_by = $request->get('sort_by', 'nom');
         $sort_order = $request->get('sort_order', 'asc');
-        
-        // Validation des colonnes de tri
+
         $allowed_sort_columns = ['nom', 'books_count', 'created_at'];
         if (in_array($sort_by, $allowed_sort_columns)) {
-            $query->orderBy($sort_by, $sort_order);
+            // Gestion spéciale pour le tri par count de relations
+            if ($sort_by === 'books_count') {
+                $query->orderBy('books_count', $sort_order);
+            } else {
+                $query->orderBy($sort_by, $sort_order);
+            }
         } else {
             $query->orderBy('nom', 'asc');
         }
 
-        // PAGINATION AVANCÉE
-        $per_page = $request->get('per_page', 10);
-        $allowed_per_page = [5, 10, 25, 50, 100];
-        if (!in_array($per_page, $allowed_per_page)) {
-            $per_page = 10;
-        }
-
+        // PAGINATION AVANCÉE - 5 CATÉGORIES PAR PAGE
+        $per_page = 5;
         $categories = $query->paginate($per_page);
         $categories->appends($request->all());
 
         $editCategory = null;
-
         if ($request->has('edit')) {
             $editCategory = Category::find($request->input('edit'));
         }
@@ -70,18 +50,17 @@ class CategoryController extends Controller
         return view('categories.index', compact('categories', 'editCategory', 'search_query', 'per_page', 'sort_by', 'sort_order'));
     }
 
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
-    // Formulaire pour créer une catégorie
+    // ✅ Formulaire pour créer une catégorie
     public function create()
     {
         return view('categories.create');
     }
 
-    // Stocke une nouvelle catégorie
+    // ✅ Stocke une nouvelle catégorie
     public function store(Request $request)
     {
         $request->validate([
-            'nom' => 'required|string|max:255',
+            'nom' => 'required|string|max:255|unique:categories,nom',
             'description' => 'nullable|string',
         ]);
 
@@ -90,17 +69,17 @@ class CategoryController extends Controller
         return redirect()->route('categories.index')->with('success', 'Catégorie ajoutée avec succès');
     }
 
-    // Formulaire pour éditer une catégorie
+    // ✅ Formulaire pour éditer une catégorie
     public function edit(Category $category)
     {
         return view('categories.edit', compact('category'));
     }
 
-    // Met à jour une catégorie
+    // ✅ Met à jour une catégorie
     public function update(Request $request, Category $category)
     {
         $request->validate([
-            'nom' => 'required|string|max:255',
+            'nom' => 'required|string|max:255|unique:categories,nom,' . $category->id,
             'description' => 'nullable|string',
         ]);
 
@@ -109,18 +88,21 @@ class CategoryController extends Controller
         return redirect()->route('categories.index')->with('success', 'Catégorie mise à jour avec succès');
     }
 
-    // Supprime une catégorie
+    // ✅ Supprime une catégorie
     public function destroy(Category $category)
     {
+        // Vérifier si la catégorie a des livres avant de supprimer
+        if ($category->books()->exists()) {
+            return redirect()->route('categories.index')
+                ->with('error', 'Impossible de supprimer la catégorie car elle contient des livres.');
+        }
+
         $category->delete();
 
         return redirect()->route('categories.index')->with('success', 'Catégorie supprimée avec succès');
     }
-<<<<<<< HEAD
-}
-=======
 
-    // ✅ NOUVELLE API : Validation en temps réel
+    // ✅ API : Validation en temps réel du nom de catégorie
     public function validateCategory(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -129,7 +111,7 @@ class CategoryController extends Controller
                 'max:255',
                 'unique:categories,nom',
                 function ($attribute, $value, $fail) {
-                    // Vérifier les noms similaires (insensible à la casse)
+                    // Recherche de catégories similaires (insensible à la casse et aux espaces)
                     $similarCategories = Category::whereRaw('LOWER(nom) LIKE ?', ['%' . strtolower($value) . '%'])
                         ->orWhereRaw('LOWER(nom) LIKE ?', ['%' . strtolower(str_replace(' ', '', $value)) . '%'])
                         ->exists();
@@ -153,5 +135,16 @@ class CategoryController extends Controller
             'message' => 'Nom de catégorie disponible'
         ]);
     }
+
+    // ✅ Génère un PDF pour une catégorie spécifique
+    public function pdf(Category $category)
+    {
+        // Charger les livres de la catégorie
+        $category->load('books');
+        
+        $pdf = Pdf::loadView('categories.pdf', compact('category'));
+        
+        // Utilisation de Str::slug au lieu de str_slug (déprécié)
+        return $pdf->download('category-' . $category->id . '-' . Str::slug($category->nom) . '.pdf');
+    }
 }
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)

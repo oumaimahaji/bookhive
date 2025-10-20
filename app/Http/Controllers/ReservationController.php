@@ -34,10 +34,10 @@ class ReservationController extends Controller
         return view('reservations.index', compact('reservations', 'books', 'users', 'editReservation'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $user = Auth::user();
-        
+
         if ($user->role === 'admin') {
             $books = Book::where('is_valid', true)->get();
             $users = User::where('role', 'user')->get();
@@ -45,8 +45,11 @@ class ReservationController extends Controller
             $books = Book::where('is_valid', true)->get();
             $users = collect([$user]);
         }
-        
-        return view('reservations.create', compact('books', 'users'));
+
+        // Pré-sélectionner le livre si book_id est fourni
+        $selectedBookId = $request->get('book_id');
+
+        return view('reservations.create', compact('books', 'users', 'selectedBookId'));
     }
 
     public function store(Request $request)
@@ -101,11 +104,28 @@ class ReservationController extends Controller
     public function update(Request $request, Reservation $reservation)
     {
         $user = Auth::user();
-        
+
         if ($user->role === 'user' && $reservation->user_id !== $user->id) {
             abort(403, 'Accès non autorisé.');
         }
 
+        // Si c'est juste une mise à jour de statut par admin/modérateur
+        if (($user->role === 'admin' || $user->role === 'moderator') && $request->has('statut') && !$request->has('book_id')) {
+            $reservation->update([
+                'statut' => $request->statut,
+            ]);
+
+            $message = 'Statut de la réservation mis à jour avec succès.';
+            if ($request->statut === 'confirmee') {
+                $message = 'Réservation confirmée avec succès.';
+            } elseif ($request->statut === 'retourne') {
+                $message = 'Livre marqué comme retourné.';
+            }
+
+            return redirect()->route('reservations.index')->with('success', $message);
+        }
+
+        // Mise à jour complète (par utilisateur ou admin)
         $request->validate([
             'book_id' => 'required|exists:books,id',
             'date_reservation' => 'required|date',
@@ -113,12 +133,12 @@ class ReservationController extends Controller
             'date_retour_effectif' => 'nullable|date|after:date_reservation',
         ]);
 
-        $userId = ($user->role === 'admin' && $request->has('user_id')) 
-                ? $request->user_id 
+        $userId = ($user->role === 'admin' && $request->has('user_id'))
+                ? $request->user_id
                 : $reservation->user_id;
 
         $statut = ($user->role === 'admin' || $user->role === 'moderator') && $request->has('statut')
-                ? $request->statut 
+                ? $request->statut
                 : $reservation->statut;
 
         $dateRetourEffectif = $request->date_retour_effectif;

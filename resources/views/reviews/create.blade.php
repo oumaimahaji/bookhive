@@ -36,7 +36,7 @@
                             <select name="book_id" class="form-control" required>
                                 <option value="">-- Sélectionnez un livre --</option>
                                 @foreach($books as $book)
-                                    <option value="{{ $book->id }}" {{ old('book_id') == $book->id ? 'selected' : '' }}>
+                                    <option value="{{ $book->id }}" {{ (request('book_id') == $book->id || old('book_id') == $book->id) ? 'selected' : '' }}>
                                         {{ $book->titre }} - {{ $book->auteur }}
                                     </option>
                                 @endforeach
@@ -81,8 +81,6 @@
                         @endif
                     </form>
 
-<<<<<<< HEAD
-=======
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
                             const form = document.querySelector('form[action="{{ route('reviews.store') }}"]');
@@ -113,8 +111,6 @@
                             });
                         });
                     </script>
-
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                 </div>
             </div>
         </div>

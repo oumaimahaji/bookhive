@@ -16,33 +16,35 @@ class ClubLecture extends Model
         return $this->belongsTo(User::class, 'createur_id');
     }
 
-    public function evenements()
-    {
-        return $this->hasMany(Evenement::class, 'club_id');
-    }
-<<<<<<< HEAD
-=======
-
-    // AJOUTEZ CETTE RELATION
-    public function members()
+    public function membres()
     {
         return $this->hasMany(ClubMember::class, 'club_id');
     }
 
-    // Méthode pour vérifier si un utilisateur est membre
-    public function isMember($userId)
+    public function evenements()
     {
-        return $this->members()->where('user_id', $userId)->where('status', 'active')->exists();
+        return $this->hasMany(Evenement::class, 'club_id');
     }
 
-    // Méthode pour vérifier si un utilisateur a une demande en attente
+    /**
+     * Vérifier si un utilisateur est membre du club
+     */
+    public function isMember($userId)
+    {
+        return $this->membres()
+            ->where('user_id', $userId)
+            ->where('status', 'active')
+            ->exists();
+    }
+
+    /**
+     * Vérifier si un utilisateur a une demande en attente
+     */
     public function hasPendingRequest($userId)
     {
-        return Notification::where('club_id', $this->id)
-            ->where('applicant_id', $userId)
-            ->where('type', 'join_request')
+        return $this->membres()
+            ->where('user_id', $userId)
             ->where('status', 'pending')
             ->exists();
     }
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 }

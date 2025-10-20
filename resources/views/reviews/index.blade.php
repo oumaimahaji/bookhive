@@ -64,8 +64,6 @@
         </div>
         @endif
 
-<<<<<<< HEAD
-=======
         {{-- Filtres et Tri --}}
         <div class="row mb-4">
             <div class="col-12">
@@ -225,7 +223,6 @@
             </div>
         </div>
 
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         {{-- Tableau des avis --}}
         <div class="row">
             <div class="col-12">
@@ -305,96 +302,5 @@
         </div>
     </div>
 </main>
-<<<<<<< HEAD
-=======
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const filterForm = document.querySelector('form[action="{{ route('reviews.index') }}"]');
-        const tableBody = document.querySelector('tbody');
-        const rows = Array.from(tableBody.querySelectorAll('tr'));
-
-        function applyFilters() {
-            const note = filterForm.querySelector('select[name="note"]').value;
-            const bookId = filterForm.querySelector('select[name="book_id"]').value;
-            const dateFrom = filterForm.querySelector('input[name="date_from"]').value;
-            const sort = filterForm.querySelector('select[name="sort"]').value;
-
-            // Filter rows
-            const filteredRows = rows.filter(row => {
-                if (row.querySelector('td[colspan]')) return false; // Skip "no results" row
-
-                const noteCell = row.querySelector('td:nth-child(3) span');
-                const bookCell = row.querySelector('td:nth-child(2)');
-                const dateCell = row.querySelector('td:nth-child(5)');
-
-                // Note filter
-                if (note) {
-                    const rowNote = noteCell.textContent.match(/\((\d+)\//);
-                    if (rowNote) {
-                        const numNote = parseInt(rowNote[1]);
-                        if (note === '4' && numNote < 4) return false;
-                        if (note === '5' && numNote !== 5) return false;
-                    }
-                }
-
-                // Book filter
-                if (bookId && bookCell && !bookCell.textContent.includes(bookId)) {
-                    return false;
-                }
-
-                // Date filter (assuming date format is dd/mm/yyyy)
-                if (dateFrom) {
-                    const reviewDate = new Date(dateCell.textContent.split('/').reverse().join('-'));
-                    const fromDate = new Date(dateFrom);
-                    if (reviewDate < fromDate) return false;
-                }
-
-                return true;
-            });
-
-            // Sort rows
-            filteredRows.sort((a, b) => {
-                if (sort === 'date_asc') {
-                    const aDate = new Date(a.querySelector('td:nth-child(5)').textContent.split('/').reverse().join('-'));
-                    const bDate = new Date(b.querySelector('td:nth-child(5)').textContent.split('/').reverse().join('-'));
-                    return aDate - bDate;
-                } else if (sort === 'date_desc') {
-                    const aDate = new Date(a.querySelector('td:nth-child(5)').textContent.split('/').reverse().join('-'));
-                    const bDate = new Date(b.querySelector('td:nth-child(5)').textContent.split('/').reverse().join('-'));
-                    return bDate - aDate;
-                } else if (sort === 'note_asc') {
-                    const aNote = parseInt(a.querySelector('td:nth-child(3) span').textContent.match(/\((\d+)\//)[1]);
-                    const bNote = parseInt(b.querySelector('td:nth-child(3) span').textContent.match(/\((\d+)\//)[1]);
-                    return aNote - bNote;
-                } else if (sort === 'note_desc') {
-                    const aNote = parseInt(a.querySelector('td:nth-child(3) span').textContent.match(/\((\d+)\//)[1]);
-                    const bNote = parseInt(b.querySelector('td:nth-child(3) span').textContent.match(/\((\d+)\//)[1]);
-                    return bNote - aNote;
-                }
-                return 0;
-            });
-
-            // Update table
-            tableBody.innerHTML = '';
-            if (filteredRows.length > 0) {
-                filteredRows.forEach(row => tableBody.appendChild(row));
-            } else {
-                const noResultsRow = document.createElement('tr');
-                noResultsRow.innerHTML = '<td colspan="6" class="text-center p-3">Aucun avis trouvé.</td>';
-                tableBody.appendChild(noResultsRow);
-            }
-        }
-
-        filterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            applyFilters();
-        });
-
-        // Initial load
-        applyFilters();
-    });
-</script>
-
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 @endsection

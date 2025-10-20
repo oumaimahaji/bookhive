@@ -12,42 +12,6 @@
                     </div>
                 </div>
                 <div class="card-body pt-4 p-3">
-<<<<<<< HEAD
-                    <form action="{{ route('users.store') }}" method="POST" role="form">
-                        @csrf
-                        
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
-                            @error('name') 
-                                <div class="text-danger text-xs">{{ $message }}</div> 
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
-                            @error('email') 
-                                <div class="text-danger text-xs">{{ $message }}</div> 
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                            @error('password') 
-                                <div class="text-danger text-xs">{{ $message }}</div> 
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password_confirmation" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="role" class="form-label">Role</label>
-=======
                     <form action="{{ route('users.store') }}" method="POST" role="form" id="createUserForm">
                         @csrf
                         
@@ -94,9 +58,9 @@
                                 <input type="password" class="form-control" id="password" name="password" 
                                        placeholder="Enter password"
                                        required
-                                       minlength="6">
+                                       minlength="8">
                                 <div class="form-text">
-                                    <span id="passwordCount">0</span>/6 characters minimum
+                                    <span id="passwordCount">0</span>/8 characters minimum
                                     <span id="passwordStatus" class="ms-2"></span>
                                 </div>
                                 @error('password') 
@@ -121,30 +85,21 @@
                         <!-- Role -->
                         <div class="mb-3">
                             <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                             <select class="form-control" id="role" name="role" required>
                                 <option value="">Select Role</option>
                                 <option value="moderator" {{ old('role') == 'moderator' ? 'selected' : '' }}>Moderator</option>
                                 <option value="club_manager" {{ old('role') == 'club_manager' ? 'selected' : '' }}>Club Manager</option>
                                 <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User</option>
                             </select>
-<<<<<<< HEAD
-=======
                             <div class="form-text">
                                 <i class="fas fa-user-tag me-1"></i>Select user role
                                 <span id="roleStatus" class="ms-2"></span>
                             </div>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                             @error('role') 
                                 <div class="text-danger text-xs">{{ $message }}</div> 
                             @enderror
                         </div>
 
-<<<<<<< HEAD
-                        <div class="d-flex justify-content-end">
-                            <a href="{{ route('user-management') }}" class="btn btn-light me-2">Cancel</a>
-                            <button type="submit" class="btn bg-gradient-primary">Create User</button>
-=======
                         <!-- Phone (Optional) -->
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone Number</label>
@@ -167,7 +122,6 @@
                             <button type="submit" class="btn bg-gradient-primary" id="submitBtn">
                                 <i class="fas fa-plus me-1"></i>Create User
                             </button>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
                         </div>
                     </form>
                 </div>
@@ -175,18 +129,10 @@
         </div>
     </div>
 </div>
-<<<<<<< HEAD
-=======
 
 <style>
-.form-control.is-valid {
-    border-color: #28a745;
-}
-
-.form-control.is-invalid {
-    border-color: #dc3545;
-}
-
+.form-control.is-valid { border-color: #28a745; }
+.form-control.is-invalid { border-color: #dc3545; }
 .text-success { color: #28a745 !important; }
 .text-warning { color: #ffc107 !important; }
 .text-danger { color: #dc3545 !important; }
@@ -195,7 +141,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Elements
     const form = document.getElementById('createUserForm');
     const nameInput = document.getElementById('name');
     const emailInput = document.getElementById('email');
@@ -205,11 +150,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const phoneInput = document.getElementById('phone');
     const submitBtn = document.getElementById('submitBtn');
 
-    // Counters
     const nameCount = document.getElementById('nameCount');
     const passwordCount = document.getElementById('passwordCount');
-    
-    // Status elements
     const nameStatus = document.getElementById('nameStatus');
     const emailStatus = document.getElementById('emailStatus');
     const passwordStatus = document.getElementById('passwordStatus');
@@ -217,49 +159,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const roleStatus = document.getElementById('roleStatus');
     const phoneStatus = document.getElementById('phoneStatus');
 
-    // Initialize counters
-    updateNameCount();
-    updatePasswordCount();
-    updateSubmitButton();
-
-    // Event listeners
-    nameInput.addEventListener('input', function() {
-        updateNameCount();
-        validateName();
-        updateSubmitButton();
-    });
-
-    emailInput.addEventListener('input', function() {
-        validateEmail();
-        updateSubmitButton();
-    });
-
-    passwordInput.addEventListener('input', function() {
-        updatePasswordCount();
-        validatePassword();
-        validatePasswordConfirm();
-        updateSubmitButton();
-    });
-
-    passwordConfirmInput.addEventListener('input', function() {
-        validatePasswordConfirm();
-        updateSubmitButton();
-    });
-
-    roleSelect.addEventListener('change', function() {
-        validateRole();
-        updateSubmitButton();
-    });
-
-    phoneInput.addEventListener('input', function() {
-        validatePhone();
-    });
-
-    // Update counters
     function updateNameCount() {
         const length = nameInput.value.length;
         nameCount.textContent = length;
-        
         if (length < 2) {
             nameCount.className = 'text-danger';
             nameStatus.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Too short</span>';
@@ -275,7 +177,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePasswordCount() {
         const length = passwordInput.value.length;
         passwordCount.textContent = length;
-        
         if (length < 8) {
             passwordCount.className = 'text-danger';
             passwordStatus.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Too short</span>';
@@ -288,166 +189,81 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Validation functions
     function validateName() {
-        const length = nameInput.value.length;
-        const isValid = length >= 2 && length <= 255;
-        
-        if (!isValid && nameInput.value) {
-            nameInput.classList.add('is-invalid');
-            nameInput.classList.remove('is-valid');
-        } else if (isValid && nameInput.value) {
-            nameInput.classList.remove('is-invalid');
-            nameInput.classList.add('is-valid');
-        } else {
-            nameInput.classList.remove('is-invalid');
-            nameInput.classList.remove('is-valid');
-        }
-        
+        const len = nameInput.value.length;
+        const isValid = len >= 2 && len <= 255;
+        nameInput.classList.toggle('is-valid', isValid);
+        nameInput.classList.toggle('is-invalid', !isValid && nameInput.value);
         return isValid;
     }
 
     function validateEmail() {
-        const email = emailInput.value;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const isValid = emailRegex.test(email);
-        
-        if (!isValid && emailInput.value) {
-            emailInput.classList.add('is-invalid');
-            emailInput.classList.remove('is-valid');
-            emailStatus.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Invalid</span>';
-        } else if (isValid && emailInput.value) {
-            emailInput.classList.remove('is-invalid');
-            emailInput.classList.add('is-valid');
-            emailStatus.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Valid</span>';
-        } else {
-            emailInput.classList.remove('is-invalid');
-            emailInput.classList.remove('is-valid');
-            emailStatus.innerHTML = '';
-        }
-        
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isValid = regex.test(emailInput.value);
+        emailInput.classList.toggle('is-valid', isValid);
+        emailInput.classList.toggle('is-invalid', !isValid && emailInput.value);
+        emailStatus.innerHTML = isValid ? '<span class="text-success"><i class="fas fa-check"></i> Valid</span>' 
+                                         : (emailInput.value ? '<span class="text-danger"><i class="fas fa-times"></i> Invalid</span>' : '');
         return isValid;
     }
 
     function validatePassword() {
-        const password = passwordInput.value;
-        const isValid = password.length >= 8;
-        
-        if (!isValid && passwordInput.value) {
-            passwordInput.classList.add('is-invalid');
-            passwordInput.classList.remove('is-valid');
-        } else if (isValid && passwordInput.value) {
-            passwordInput.classList.remove('is-invalid');
-            passwordInput.classList.add('is-valid');
-        } else {
-            passwordInput.classList.remove('is-invalid');
-            passwordInput.classList.remove('is-valid');
-        }
-        
+        const isValid = passwordInput.value.length >= 8;
+        passwordInput.classList.toggle('is-valid', isValid);
+        passwordInput.classList.toggle('is-invalid', !isValid && passwordInput.value);
         return isValid;
     }
 
     function validatePasswordConfirm() {
-        const password = passwordInput.value;
-        const confirm = passwordConfirmInput.value;
-        const isValid = password === confirm && password.length >= 8;
-        
-        if (!isValid && passwordConfirmInput.value) {
-            passwordConfirmInput.classList.add('is-invalid');
-            passwordConfirmInput.classList.remove('is-valid');
-            passwordConfirmStatus.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> No match</span>';
-        } else if (isValid && passwordConfirmInput.value) {
-            passwordConfirmInput.classList.remove('is-invalid');
-            passwordConfirmInput.classList.add('is-valid');
-            passwordConfirmStatus.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Matches</span>';
-        } else {
-            passwordConfirmInput.classList.remove('is-invalid');
-            passwordConfirmInput.classList.remove('is-valid');
-            passwordConfirmStatus.innerHTML = '';
-        }
-        
+        const isValid = passwordInput.value === passwordConfirmInput.value && passwordInput.value.length >= 8;
+        passwordConfirmInput.classList.toggle('is-valid', isValid);
+        passwordConfirmInput.classList.toggle('is-invalid', !isValid && passwordConfirmInput.value);
+        passwordConfirmStatus.innerHTML = isValid ? '<span class="text-success"><i class="fas fa-check"></i> Matches</span>' 
+                                                 : (passwordConfirmInput.value ? '<span class="text-danger"><i class="fas fa-times"></i> No match</span>' : '');
         return isValid;
     }
 
     function validateRole() {
         const isValid = roleSelect.value !== '';
-        
-        if (!isValid) {
-            roleSelect.classList.add('is-invalid');
-            roleSelect.classList.remove('is-valid');
-            roleStatus.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Required</span>';
-        } else {
-            roleSelect.classList.remove('is-invalid');
-            roleSelect.classList.add('is-valid');
-            roleStatus.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Selected</span>';
-        }
-        
+        roleSelect.classList.toggle('is-valid', isValid);
+        roleSelect.classList.toggle('is-invalid', !isValid);
+        roleStatus.innerHTML = isValid ? '<span class="text-success"><i class="fas fa-check"></i> Selected</span>' 
+                                       : '<span class="text-danger"><i class="fas fa-times"></i> Required</span>';
         return isValid;
     }
 
     function validatePhone() {
-        const phone = phoneInput.value;
-        // Phone is optional, so only validate if there's content
-        const isValid = phone === '' || /^[0-9+\-\s()]{10,20}$/.test(phone);
-        
-        if (!isValid && phoneInput.value) {
-            phoneInput.classList.add('is-invalid');
-            phoneInput.classList.remove('is-valid');
-            phoneStatus.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Invalid</span>';
-        } else if (isValid && phoneInput.value) {
-            phoneInput.classList.remove('is-invalid');
-            phoneInput.classList.add('is-valid');
-            phoneStatus.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Valid</span>';
-        } else {
-            phoneInput.classList.remove('is-invalid');
-            phoneInput.classList.remove('is-valid');
-            phoneStatus.innerHTML = '';
-        }
-        
+        const val = phoneInput.value;
+        const isValid = val === '' || /^[0-9+\-\s()]{10,20}$/.test(val);
+        phoneInput.classList.toggle('is-valid', isValid && val !== '');
+        phoneInput.classList.toggle('is-invalid', !isValid && val !== '');
+        phoneStatus.innerHTML = val === '' ? '' : (isValid ? '<span class="text-success"><i class="fas fa-check"></i> Valid</span>' 
+                                                            : '<span class="text-danger"><i class="fas fa-times"></i> Invalid</span>');
         return isValid;
     }
 
     function updateSubmitButton() {
-        const isNameValid = nameInput.value.length >= 2 && nameInput.value.length <= 255;
-        const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value);
-        const isPasswordValid = passwordInput.value.length >= 8;
-        const isPasswordConfirmValid = passwordInput.value === passwordConfirmInput.value && passwordInput.value.length >= 8;
-        const isRoleValid = roleSelect.value !== '';
-        
-        const isFormValid = isNameValid && isEmailValid && isPasswordValid && isPasswordConfirmValid && isRoleValid;
-        
+        const isFormValid = validateName() && validateEmail() && validatePassword() && validatePasswordConfirm() && validateRole();
         submitBtn.disabled = !isFormValid;
-        
-        if (isFormValid) {
-            submitBtn.classList.remove('btn-secondary');
-            submitBtn.classList.add('bg-gradient-primary');
-            submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i>Create User ✓';
-        } else {
-            submitBtn.classList.remove('bg-gradient-primary');
-            submitBtn.classList.add('btn-secondary');
-            submitBtn.innerHTML = '<i class="fas fa-plus me-1"></i>Create User';
-        }
+        submitBtn.className = isFormValid ? 'btn bg-gradient-primary' : 'btn btn-secondary';
+        submitBtn.innerHTML = isFormValid ? '<i class="fas fa-plus me-1"></i>Create User ✓' : '<i class="fas fa-plus me-1"></i>Create User';
     }
 
-    // Prevent form submission if invalid
+    [nameInput, emailInput, passwordInput, passwordConfirmInput].forEach(el => el.addEventListener('input', updateSubmitButton));
+    roleSelect.addEventListener('change', updateSubmitButton);
+    phoneInput.addEventListener('input', validatePhone);
+
     form.addEventListener('submit', function(e) {
         if (submitBtn.disabled) {
             e.preventDefault();
-            // Show validation for all fields
-            validateName();
-            validateEmail();
-            validatePassword();
-            validatePasswordConfirm();
-            validateRole();
-            validatePhone();
-            
             alert('Please correct the errors in the form before submitting.');
         }
     });
 
-    // Focus on first field
     nameInput.focus();
+    updateNameCount();
+    updatePasswordCount();
+    updateSubmitButton();
 });
 </script>
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
 @endsection

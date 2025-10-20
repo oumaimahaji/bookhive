@@ -5,23 +5,31 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
+use Illuminate\Http\JsonResponse;
 
 class FrontendController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Les 5 DERNIERS livres pour la section "Nouveautés"
+        // Livres récents triés par date de modification
         $latestBooks = Book::where('is_valid', true)
             ->with('category')
-            ->orderBy('created_at', 'desc')
-            ->take(5) // Seulement 5 livres pour les nouveautés
+            ->orderBy('updated_at', 'desc')
+            ->take(5)
             ->get();
 
-        // TOUS les livres paginés pour la section "Toute la collection"
-        $allBooks = Book::where('is_valid', true)
+        // Query pour tous les livres avec recherche par auteur
+        $allBooksQuery = Book::where('is_valid', true)
             ->with('category')
-            ->orderBy('created_at', 'desc')
-            ->paginate(12); // 12 livres par page avec pagination
+            ->orderBy('updated_at', 'desc');
+
+        // Recherche par auteur si le paramètre est présent
+        if ($request->has('author') && !empty($request->author)) {
+            $authorName = trim($request->author);
+            $allBooksQuery->where('auteur', 'like', '%' . $authorName . '%');
+        }
+
+        $allBooks = $allBooksQuery->paginate(12);
 
         $categories = Category::withCount(['books' => function ($query) {
             $query->where('is_valid', true);
@@ -38,12 +46,10 @@ class FrontendController extends Controller
 
     public function showBook(Book $book)
     {
-        // Vérifier que le livre est validé
         if (!$book->is_valid) {
             abort(404);
         }
 
-        // Livres similaires
         $relatedBooks = Book::where('is_valid', true)
             ->where('category_id', $book->category_id)
             ->where('id', '!=', $book->id)
@@ -61,5 +67,34 @@ class FrontendController extends Controller
     public function contact()
     {
         return view('frontend.contact');
+    }
+
+    /**
+     * API: Recherche par auteur avec pagination
+     */
+    public function searchBooks(Request $request): JsonResponse
+    {
+        $query = Book::where('is_valid', true)
+            ->with(['category'])
+            ->orderBy('updated_at', 'desc');
+
+        if ($request->has('author') && !empty($request->author)) {
+            $authorName = trim($request->author);
+            $query->where('auteur', 'like', '%' . $authorName . '%');
+        }
+
+        $perPage = 5;
+        $books = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $books->items(),
+            'pagination' => [
+                'current_page' => $books->currentPage(),
+                'last_page' => $books->lastPage(),
+                'per_page' => $books->perPage(),
+                'total' => $books->total(),
+            ]
+        ]);
     }
 }

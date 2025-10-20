@@ -5,39 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Http\Request;
-<<<<<<< HEAD
-
-class BookController extends Controller
-{
-    // List all books
-   public function index(Request $request)
-{
-    $books = Book::with('category')->get();
-    $categories = Category::all();
-    $editBook = null;
-
-    if ($request->has('edit')) {
-        $editBook = Book::find($request->input('edit'));
-    }
-
-    return view('books.index', compact('books', 'categories', 'editBook'));
-}
-
-    // Show create book form
-=======
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\DuplicateDetectorService;
+use App\Services\BookAIService;
 
 class BookController extends Controller
 {
     protected $duplicateDetector;
+    protected $aiService;
 
     public function __construct()
     {
         $this->duplicateDetector = new DuplicateDetectorService();
+        $this->aiService = new BookAIService();
     }
 
     /**
@@ -47,17 +30,12 @@ class BookController extends Controller
     {
         $query = Book::with('category');
 
-        // RECHERCHE AVANCÉE
+        // RECHERCHE PAR TITRE ET AUTEUR UNIQUEMENT
         $search_query = $request->get('search', '');
         if ($search_query) {
             $query->where(function ($q) use ($search_query) {
                 $q->where('titre', 'like', "%{$search_query}%")
-                    ->orWhere('auteur', 'like', "%{$search_query}%")
-                    ->orWhere('description', 'like', "%{$search_query}%")
-                    ->orWhere('type', 'like', "%{$search_query}%")
-                    ->orWhereHas('category', function ($categoryQuery) use ($search_query) {
-                        $categoryQuery->where('nom', 'like', "%{$search_query}%");
-                    });
+                    ->orWhere('auteur', 'like', "%{$search_query}%");
             });
         }
 
@@ -72,15 +50,13 @@ class BookController extends Controller
             $query->orderBy('titre', 'asc');
         }
 
-        // PAGINATION AVANCÉE
-        $per_page = $request->get('per_page', 10);
-        $allowed_per_page = [5, 10, 25, 50, 100];
-        if (!in_array($per_page, $allowed_per_page)) {
-            $per_page = 10;
+        // PAGINATION - CORRIGÉ : 5 livres par page
+        $books = $query->paginate(5);
+        
+        // Garder les paramètres de recherche dans la pagination
+        if ($request->hasAny(['search', 'sort_by', 'sort_order'])) {
+            $books->appends($request->only(['search', 'sort_by', 'sort_order']));
         }
-
-        $books = $query->paginate($per_page);
-        $books->appends($request->all());
 
         $categories = Category::all();
         $editBook = null;
@@ -88,55 +64,93 @@ class BookController extends Controller
         // Récupérer le livre à éditer SI le paramètre edit existe
         if ($request->has('edit')) {
             $editBook = Book::find($request->input('edit'));
-            // Si le livre n'existe pas, rediriger vers la liste
             if (!$editBook) {
                 return redirect()->route('books.index')->with('error', 'Book not found.');
             }
         }
 
-        return view('books.index', compact('books', 'categories', 'editBook', 'search_query', 'per_page', 'sort_by', 'sort_order'));
+        return view('books.index', compact('books', 'categories', 'editBook', 'search_query', 'sort_by', 'sort_order'));
     }
 
     /**
      * Affiche le formulaire de création d'un livre
      */
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
-    public function create()
+    public function create(Request $request)
     {
         $categories = Category::all();
-        return view('books.create', compact('categories'));
+        
+        // Vérifier si on a un titre pour les recommandations IA
+        $aiData = [];
+        $input = [];
+        
+        if ($request->has('ai_title')) {
+            $title = $request->get('ai_title');
+            $author = $request->get('ai_author', '');
+            
+            $aiData = $this->aiService->getAIRecommendations($title, $author);
+            
+            // Pré-remplir automatiquement les champs
+            $input = [
+                'titre' => $title,
+                'auteur' => $author,
+                'description' => $aiData['generated_description'] ?? ''
+            ];
+            
+            // Pré-remplir la catégorie seulement si elle existe
+            if (isset($aiData['recommended_category']['id'])) {
+                $input['category_id'] = $aiData['recommended_category']['id'];
+            }
+        }
+        
+        return view('books.create', compact('categories', 'aiData', 'input'));
     }
 
-<<<<<<< HEAD
-    // Store new book
-    public function store(Request $request)
+    /**
+     * Obtenir les recommandations IA via AJAX
+     */
+    public function getAIRecommendations(Request $request)
     {
-=======
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'author' => 'nullable|string|max:255'
+        ]);
+
+        try {
+            $recommendations = $this->aiService->getAIRecommendations(
+                $request->title,
+                $request->author
+            );
+
+            return response()->json($recommendations);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur API recommandation IA:', ['error' => $e->getMessage()]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Impossible d\'obtenir les recommandations IA'
+            ], 500);
+        }
+    }
+
     /**
      * Enregistre un nouveau livre dans la base de données
      */
     public function store(Request $request)
     {
-        // DEBUG: Vérifier les données reçues
+        // DEBUG DÉTAILLÉ
         Log::info('=== DÉBUT STORE BOOK ===');
-        Log::info('Données reçues:', $request->all());
-        Log::info('Force create reçu:', ['value' => $request->force_create]);
+        Log::info('Données reçues:', $request->except(['cover_image', 'pdf']));
 
-        // VALIDATION DES DONNÉES
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
+        // VALIDATION DES DONNÉES - CORRIGÉ : cover_image EST required
         $request->validate([
             'titre' => 'required|string|max:255',
             'auteur' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:500',
             'category_id' => 'required|exists:categories,id',
-            'type' => 'nullable|string',
+            'type' => 'nullable|string|max:100',
             'is_valid' => 'sometimes|boolean',
-<<<<<<< HEAD
-        ]);
-
-        Book::create([
-=======
-            'cover_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'cover_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // REQUIS
             'pdf' => 'nullable|mimes:pdf|max:10240',
         ]);
 
@@ -146,172 +160,168 @@ class BookController extends Controller
             $request->auteur
         );
 
-        // Vérification robuste de la case à cocher
         $forceCreation = $request->has('force_create') && $request->force_create == '1';
-
-        Log::info('Résultat détection:', [
-            'doublons' => !empty($duplicates),
-            'force_create' => $forceCreation,
-            'count_doublons' => count($duplicates)
-        ]);
 
         // Si doublons détectés ET que l'utilisateur n'a PAS coché "forcer"
         if (!empty($duplicates) && !$forceCreation) {
-            Log::info('🚫 REDIRECTION: Doublons détectés sans forçage');
             $categories = Category::all();
             return view('books.create', compact('categories', 'duplicates'))
                 ->with('input', $request->all());
         }
 
-        Log::info('✅ CRÉATION: Pas de doublons OU création forcée');
+        // UPLOAD DE LA PHOTO DE COUVERTURE - MAINTENANT OBLIGATOIRE
+        Log::info('=== UPLOAD COVER IMAGE ===');
+        $coverPath = null;
+        
+        // Cette partie est maintenant garantie d'avoir un fichier grâce à la validation
+        if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid()) {
+            $file = $request->file('cover_image');
 
-        // Upload de la photo de couverture
-        $coverPath = $request->file('cover_image')->store('covers', 'public');
+            // Générer un nom de fichier unique
+            $fileName = 'book_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $coverPath = $file->storeAs('covers', $fileName, 'public');
 
-        // Création du livre
-        $book = new Book([
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
+            Log::info('Cover upload details:', [
+                'original_name' => $file->getClientOriginalName(),
+                'stored_name' => $fileName,
+                'storage_path' => $coverPath,
+                'file_exists' => Storage::disk('public')->exists($coverPath),
+                'file_size' => $file->getSize()
+            ]);
+        } else {
+            // Normalement on ne devrait jamais arriver ici grâce à la validation
+            Log::error('Cover image upload failed but validation passed');
+            return back()->with('error', 'Erreur lors du téléchargement de l\'image de couverture.')->withInput();
+        }
+
+        // CRÉATION DU LIVRE - cover_image est maintenant toujours présent
+        $bookData = [
             'titre' => $request->titre,
             'auteur' => $request->auteur,
             'description' => $request->description,
             'category_id' => $request->category_id,
             'type' => $request->type,
-<<<<<<< HEAD
-            'is_valid' => $request->has('is_valid') ? $request->is_valid : false,
-        ]);
-
-        return redirect()->route('books.index')->with('success', 'Livre ajouté avec succès');
-    }
-
-    // Show edit book form
-=======
             'is_valid' => $request->has('is_valid') ? 1 : 0,
             'user_id' => Auth::id(),
-            'cover_image' => $coverPath,
-        ]);
+            'cover_image' => $coverPath, // Toujours présent
+        ];
 
-        // Gestion du PDF pour admin
+        $book = new Book($bookData);
+
+        // GESTION DU PDF POUR ADMIN
         if (Auth::check() && Auth::user()->role === 'admin' && $request->hasFile('pdf')) {
-            $path = $request->file('pdf')->store('books', 'public');
-            $book->pdf_path = $path;
+            $pdfFile = $request->file('pdf');
+            if ($pdfFile->isValid()) {
+                $pdfFileName = 'book_pdf_' . time() . '_' . uniqid() . '.pdf';
+                $pdfPath = $pdfFile->storeAs('books', $pdfFileName, 'public');
+                $book->pdf_path = $pdfPath;
+
+                Log::info('PDF upload details:', [
+                    'original_name' => $pdfFile->getClientOriginalName(),
+                    'stored_name' => $pdfFileName,
+                    'storage_path' => $pdfPath
+                ]);
+            }
         }
 
         $book->save();
 
-        Log::info('✅ LIVRE CRÉÉ: ' . $book->titre);
+        Log::info('✅ LIVRE CRÉÉ: ' . $book->titre . ' (ID: ' . $book->id . ')');
 
-        // Message différent si création forcée
-        if (!empty($duplicates) && $forceCreation) {
-            Log::info('📢 MESSAGE: Création forcée avec doublons');
-            return redirect()->route('books.index')
-                ->with('warning', 'Livre ajouté avec succès - Attention: doublons détectés mais création forcée');
-        }
+        // Message de confirmation
+        $message = !empty($duplicates) && $forceCreation
+            ? 'Livre ajouté avec succès - Attention: doublons détectés mais création forcée'
+            : 'Livre ajouté avec succès';
 
-        Log::info('📢 MESSAGE: Création normale');
-        return redirect()->route('books.index')
-            ->with('success', 'Livre ajouté avec succès');
+        return redirect()->route('books.index')->with('success', $message);
     }
 
     /**
      * Affiche le formulaire d'édition d'un livre (version séparée)
      */
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
     public function edit(Book $book)
     {
         $categories = Category::all();
         return view('books.edit', compact('book', 'categories'));
     }
 
-<<<<<<< HEAD
-    // Update book
-    public function update(Request $request, Book $book)
-    {
-=======
     /**
      * Met à jour les informations d'un livre existant
      */
     public function update(Request $request, Book $book)
     {
         // VALIDATION
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         $request->validate([
             'titre' => 'required|string|max:255',
             'auteur' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:500',
             'category_id' => 'required|exists:categories,id',
-            'type' => 'nullable|string',
+            'type' => 'nullable|string|max:100',
             'is_valid' => 'sometimes|boolean',
-<<<<<<< HEAD
-        ]);
-
-=======
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'pdf' => 'nullable|mimes:pdf|max:10240',
         ]);
 
+        Log::info('=== UPDATE BOOK ===', ['book_id' => $book->id]);
+
         // Mise à jour des champs de base
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
         $book->update([
             'titre' => $request->titre,
             'auteur' => $request->auteur,
             'description' => $request->description,
             'category_id' => $request->category_id,
             'type' => $request->type,
-<<<<<<< HEAD
-            'is_valid' => $request->has('is_valid') ? $request->is_valid : $book->is_valid,
-        ]);
-
-        return redirect()->route('books.index')->with('success', 'Livre mis à jour avec succès');
-    }
-
-    // Delete book
-    public function destroy(Book $book)
-    {
-        $book->delete();
-        return redirect()->route('books.index')->with('success', 'Livre supprimé avec succès');
-    }
-
-
-
-
-
-
-
-
-    
-}
-
-
-=======
             'is_valid' => $request->has('is_valid') ? 1 : 0,
         ]);
 
-        // Gestion des fichiers
-        if ($request->hasFile('cover_image')) {
+        // GESTION DE LA NOUVELLE IMAGE DE COUVERTURE
+        if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid()) {
+            Log::info('Updating cover image for book: ' . $book->id);
+
             // Supprimer l'ancienne photo si elle existe
             if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
                 Storage::disk('public')->delete($book->cover_image);
+                Log::info('Old cover deleted: ' . $book->cover_image);
             }
 
             // Stocker la nouvelle photo
-            $coverPath = $request->file('cover_image')->store('covers', 'public');
+            $file = $request->file('cover_image');
+            $fileName = 'book_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $coverPath = $file->storeAs('covers', $fileName, 'public');
+
             $book->update(['cover_image' => $coverPath]);
+
+            Log::info('New cover stored:', [
+                'path' => $coverPath,
+                'file_exists' => Storage::disk('public')->exists($coverPath)
+            ]);
         }
 
-        // Si un nouveau PDF est ajouté
+        // GESTION DU NOUVEAU PDF POUR ADMIN
         if (Auth::check() && Auth::user()->role === 'admin' && $request->hasFile('pdf')) {
-            // Supprimer l'ancien PDF s'il existe
-            if ($book->pdf_path && Storage::disk('public')->exists($book->pdf_path)) {
-                Storage::disk('public')->delete($book->pdf_path);
-            }
+            $pdfFile = $request->file('pdf');
+            if ($pdfFile->isValid()) {
+                // Supprimer l'ancien PDF s'il existe
+                if ($book->pdf_path && Storage::disk('public')->exists($book->pdf_path)) {
+                    Storage::disk('public')->delete($book->pdf_path);
+                }
 
-            // Stocker le nouveau fichier
-            $path = $request->file('pdf')->store('books', 'public');
-            $book->update(['pdf_path' => $path]);
+                // Stocker le nouveau fichier
+                $pdfFileName = 'book_pdf_' . time() . '_' . uniqid() . '.pdf';
+                $pdfPath = $pdfFile->storeAs('books', $pdfFileName, 'public');
+                $book->update(['pdf_path' => $pdfPath]);
+            }
         }
 
-        // Rediriger vers la liste SANS le paramètre edit
-        return redirect()->route('books.index')->with('success', 'Book updated successfully');
+        Log::info('✅ BOOK UPDATED: ' . $book->titre);
+        
+        // Redirection avec les paramètres de recherche conservés
+        $redirectParams = [];
+        if ($request->has('search')) $redirectParams['search'] = $request->search;
+        if ($request->has('sort_by')) $redirectParams['sort_by'] = $request->sort_by;
+        if ($request->has('sort_order')) $redirectParams['sort_order'] = $request->sort_order;
+        
+        return redirect()->route('books.index', $redirectParams)->with('success', 'Livre mis à jour avec succès');
     }
 
     /**
@@ -319,25 +329,34 @@ class BookController extends Controller
      */
     public function destroy(Book $book)
     {
+        Log::info('=== DELETE BOOK ===', ['book_id' => $book->id, 'title' => $book->titre]);
+
         // Supprimer le fichier PDF associé s'il existe
         if ($book->pdf_path && Storage::disk('public')->exists($book->pdf_path)) {
             Storage::disk('public')->delete($book->pdf_path);
+            Log::info('PDF deleted: ' . $book->pdf_path);
         }
 
         // Supprimer l'image de couverture si elle existe
         if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
             Storage::disk('public')->delete($book->cover_image);
+            Log::info('Cover image deleted: ' . $book->cover_image);
         }
 
+        $bookTitle = $book->titre;
         $book->delete();
 
-        return redirect()->route('books.index')->with('success', 'Livre supprimé avec succès');
+        Log::info('✅ BOOK DELETED: ' . $bookTitle);
+        
+        // Redirection avec conservation des paramètres
+        $redirectParams = request()->only(['search', 'sort_by', 'sort_order']);
+        return redirect()->route('books.index', $redirectParams)->with('success', 'Livre "' . $bookTitle . '" supprimé avec succès');
     }
 
     /**
      * Télécharge le PDF d'un livre
      */
-    public function downloadPdf(Book $book)
+    public function download(Book $book)
     {
         if (!$book->pdf_path || !Storage::disk('public')->exists($book->pdf_path)) {
             return redirect()->back()->with('error', 'Aucun PDF disponible pour ce livre.');
@@ -347,7 +366,7 @@ class BookController extends Controller
     }
 
     /**
-     * Exporte les livres en PDF
+     * Exporte les livres en PDF (fonctionnalité optionnelle)
      */
     public function export(Request $request)
     {
@@ -358,12 +377,7 @@ class BookController extends Controller
         if ($search_query) {
             $query->where(function ($q) use ($search_query) {
                 $q->where('titre', 'like', "%{$search_query}%")
-                    ->orWhere('auteur', 'like', "%{$search_query}%")
-                    ->orWhere('description', 'like', "%{$search_query}%")
-                    ->orWhere('type', 'like', "%{$search_query}%")
-                    ->orWhereHas('category', function ($categoryQuery) use ($search_query) {
-                        $categoryQuery->where('nom', 'like', "%{$search_query}%");
-                    });
+                    ->orWhere('auteur', 'like', "%{$search_query}%");
             });
         }
 
@@ -391,4 +405,3 @@ class BookController extends Controller
         return $pdf->download($filename);
     }
 }
->>>>>>> 688c610 (Ajout CRUD + FRONT ET BACK + API +AI Reservation et Review)
