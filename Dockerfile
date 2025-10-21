@@ -1,38 +1,47 @@
-FROM php:8.2-fpm
+FROM php:8.2-fpm-alpine
 
 # Set working directory
 WORKDIR /var/www
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies (Alpine Linux uses apk instead of apt)
+RUN apk update && apk add --no-cache \
     git \
     curl \
     libpng-dev \
-    libonig-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
     libxml2-dev \
     zip \
     unzip \
     nodejs \
     npm
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy existing application directory contents
+# Copy composer files first (for better caching)
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies
+RUN composer install --no-dev --no-autoloader --no-scripts
+
+# Copy the rest of the application
 COPY . .
 
-# Copy existing application directory permissions
-COPY --chown=www-data:www-data . /var/www
+# Generate autoload and optimize
+RUN composer dump-autoload --optimize
 
-# Change current user to www-data
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www
+
+# Change to www-data user
 USER www-data
 
-# Expose port 9000 and start php-fpm server
+# Expose port
 EXPOSE 9000
+
 CMD ["php-fpm"]
