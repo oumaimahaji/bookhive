@@ -14,7 +14,8 @@ RUN apk update && apk add --no-cache \
     zip \
     unzip \
     nodejs \
-    npm
+    npm \
+    oniguruma-dev  # ← ADD THIS LINE
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
