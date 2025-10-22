@@ -89,6 +89,16 @@
                                     <option value="post" {{ request('sort') == 'post' ? 'selected' : '' }}>Post Title</option>
                                 </select>
                             </div>
+                            {{-- SENTIMENT FILTER --}}
+<div class="col-md-4 mb-3">
+    <label class="form-label">Sentiment</label>
+    <select name="sentiment" class="form-control">
+        <option value="">All Sentiments</option>
+        <option value="positive" {{ request('sentiment') == 'positive' ? 'selected' : '' }}>Positive</option>
+        <option value="negative" {{ request('sentiment') == 'negative' ? 'selected' : '' }}>Negative</option>
+        <option value="neutral" {{ request('sentiment') == 'neutral' ? 'selected' : '' }}>Neutral</option>
+    </select>
+</div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Items Per Page</label>
                                 <select name="per_page" class="form-control">
@@ -330,6 +340,7 @@
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">User</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Post</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Sentiment</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
                                 </tr>
                             </thead>
@@ -345,6 +356,7 @@
                                                 </p>
                                             </div>
                                         </div>
+
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
@@ -370,6 +382,13 @@
                                             {{ \Carbon\Carbon::parse($comment->date)->format('M d, Y') }}
                                         </span>
                                     </td>
+                                    <td class="align-middle text-center">
+    @if($comment->sentiment)
+        {!! $comment->sentiment_badge !!}
+    @else
+        <span class="badge badge-sm bg-gradient-secondary">Not analyzed</span>
+    @endif
+</td>
                                     <td class="align-middle text-center">
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('comments.index', ['edit' => $comment->id]) }}"

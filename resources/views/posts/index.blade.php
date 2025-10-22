@@ -83,6 +83,16 @@
                                 </select>
                             </div>
                         </div>
+                        {{-- SENTIMENT FILTER --}}
+<div class="col-md-6 mb-3">
+    <label class="form-label">Sentiment</label>
+    <select name="sentiment" class="form-control">
+        <option value="">All Sentiments</option>
+        <option value="positive" {{ request('sentiment') == 'positive' ? 'selected' : '' }}>Positive</option>
+        <option value="negative" {{ request('sentiment') == 'negative' ? 'selected' : '' }}>Negative</option>
+        <option value="neutral" {{ request('sentiment') == 'neutral' ? 'selected' : '' }}>Neutral</option>
+    </select>
+</div>
                         <div class="row">
                             <div class="col-12 d-flex justify-content-between">
                                 <div>
@@ -297,6 +307,9 @@
         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
             Reactions
         </th>
+        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+    Sentiment
+</th>
         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
     </tr>
 </thead>
@@ -334,6 +347,7 @@
                     </small>
                     @endif
                 </div>
+
             </div>
         </td>
         <td>
@@ -373,6 +387,13 @@
             <span class="badge badge-sm bg-gradient-secondary">0 reactions</span>
             @endif
         </td>
+        <td class="align-middle text-center">
+    @if($post->sentiment)
+        {!! $post->sentiment_badge !!}
+    @else
+        <span class="badge badge-sm bg-gradient-secondary">Not analyzed</span>
+    @endif
+</td>
         <td class="align-middle text-center">
             <div class="btn-group" role="group">
                 <a href="{{ route('posts.index', ['edit' => $post->id]) }}"
