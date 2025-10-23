@@ -7,8 +7,8 @@
         <div class="col-12">
             <div class="card mb-4 mx-4">
                 <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Créer une Réservation</h5>
-                    <a href="{{ route('reservations.index') }}" class="btn bg-gradient-primary btn-sm mb-0">Retour à la liste</a>
+                    <h5 class="mb-0">Create a Reservation</h5>
+                    <a href="{{ route('reservations.index') }}" class="btn bg-gradient-primary btn-sm mb-0">Back to list</a>
                 </div>
                 <div class="card-body px-4 pt-4 pb-2">
 
@@ -27,9 +27,9 @@
                         
                         @if(Auth::user()->role === 'admin')
                         <div class="mb-3">
-                            <label class="form-label">Utilisateur</label>
+                            <label class="form-label">User</label>
                             <select name="user_id" class="form-control" required>
-                                <option value="">-- Sélectionnez --</option>
+                                <option value="">Select</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
                                         {{ $user->name }} ({{ $user->email }})
@@ -39,16 +39,16 @@
                         </div>
                         @else
                         <div class="mb-3">
-                            <label class="form-label">Utilisateur</label>
+                            <label class="form-label">User</label>
                             <input type="text" class="form-control" value="{{ Auth::user()->name }} ({{ Auth::user()->email }})" readonly>
-                            <small class="text-muted">Votre réservation sera liée à votre compte</small>
+                            <small class="text-muted">Your reservation will be linked to your account</small>
                         </div>
                         @endif
 
                         <div class="mb-3">
-                            <label class="form-label">Livre</label>
+                            <label class="form-label">Book</label>
                             <select name="book_id" class="form-control" required>
-                                <option value="">-- Sélectionnez --</option>
+                                <option value="">Select</option>
                                 @foreach($books as $book)
                                     <option value="{{ $book->id }}" {{ (old('book_id', $selectedBookId) == $book->id) ? 'selected' : '' }}>
                                         {{ $book->titre }} - {{ $book->auteur }}
@@ -58,17 +58,17 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Date de Réservation</label>
+                            <label class="form-label">Reservation Date</label>
                             <input type="date" name="date_reservation" value="{{ old('date_reservation', date('Y-m-d')) }}" class="form-control" required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Date de Retour Prévue</label>
+                            <label class="form-label">Expected Return Date</label>
                             <input type="date" name="date_retour_prev" value="{{ old('date_retour_prev', date('Y-m-d', strtotime('+7 days'))) }}" class="form-control" required>
-                            <small class="text-muted">La réservation sera créée avec le statut "En attente"</small>
+                            <small class="text-muted">The reservation will be created with "Pending" status</small>
                         </div>
 
-                        <button type="submit" class="btn bg-gradient-primary">Créer la Réservation</button>
+                        <button type="submit" class="btn bg-gradient-primary">Create the Reservation</button>
                     </form>
 
                     <script>
@@ -82,7 +82,7 @@
                                 const resDate = new Date(reservationDate.value);
                                 const retDate = new Date(returnDate.value);
                                 if (resDate >= retDate) {
-                                    alert('La date de retour prévue doit être après la date de réservation.');
+                                    alert('The expected return date must be after the reservation date.');
                                     return false;
                                 }
                                 return true;

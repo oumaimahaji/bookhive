@@ -241,6 +241,28 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/chatbot', [ChatbotController::class, 'askChatbot']);
 
 
+        return response()->json([
+            'success' => true,
+            'message' => 'DEFINITIVE sentiment analysis completed!',
+            'results' => $results,
+            'next_steps' => [
+                '1. Create a new post with: "Ce livre est vraiment excellent et super!"',
+                '2. Create a new comment with: "Je déteste ce contenu, c\'est horrible"',
+                '3. Check your posts/comments - sentiment badges should work now!'
+            ]
+        ]);
+    })->name('definitive.sentiment.fix');
+
+
+
+
+    // Chatbot routes (redirect to reservations where chatbot is integrated)
+    Route::get('/chat', function () {
+        return redirect()->route('reservations.index');
+    });
+    Route::post('/chatbot', [ChatbotController::class, 'askChatbot']);
+
+
 
 
  // =============================================
