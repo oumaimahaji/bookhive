@@ -9,6 +9,7 @@ use App\Models\Reservation;
 use App\Services\TwinwordSentimentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class ReviewController extends Controller
 {
@@ -19,11 +20,14 @@ class ReviewController extends Controller
         $this->sentimentService = $sentimentService;
     }
 
+    /**
+     * 🗂️ Afficher la liste des avis
+     */
     public function index(Request $request)
     {
         $user = Auth::user();
 
-        if ($user->role === 'admin' || $user->role === 'moderator') {
+        if (in_array($user->role, ['admin', 'moderator'])) {
             $reviews = Review::with(['user', 'book'])->get();
         } else {
             $reviews = Review::with(['user', 'book'])
@@ -32,20 +36,19 @@ class ReviewController extends Controller
         }
 
         $books = Book::where('is_valid', true)->get();
-        $editReview = null;
-
-        if ($request->has('edit')) {
-            $editReview = Review::find($request->input('edit'));
-        }
+        $editReview = $request->has('edit') ? Review::find($request->input('edit')) : null;
 
         return view('reviews.index', compact('reviews', 'books', 'editReview'));
     }
 
+    /**
+     * 📝 Formulaire de création d’un nouvel avis
+     */
     public function create()
     {
         $user = Auth::user();
 
-        // Récupérer les livres que l'utilisateur a réservés et retournés
+        // L’utilisateur ne peut commenter que les livres qu’il a réservés et retournés
         $reservedBookIds = Reservation::where('user_id', $user->id)
             ->where('statut', 'retourne')
             ->pluck('book_id');
@@ -57,6 +60,9 @@ class ReviewController extends Controller
         return view('reviews.create', compact('books'));
     }
 
+    /**
+     * 💾 Enregistrer un avis
+     */
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -67,7 +73,7 @@ class ReviewController extends Controller
             'commentaire' => 'required|string|max:1000',
         ]);
 
-        // Vérifier si l'utilisateur a réservé ce livre
+        // Vérifie si l’utilisateur a réservé ce livre avant de commenter
         if ($user->role === 'user') {
             $hasReserved = Reservation::where('user_id', $user->id)
                 ->where('book_id', $request->book_id)
@@ -79,7 +85,7 @@ class ReviewController extends Controller
             }
         }
 
-        // Analyse de sentiment
+        // 🔍 Analyse de sentiment
         $sentimentScore = $this->sentimentService->getSentimentScore($request->commentaire);
         $sentimentType = $this->sentimentService->getSentimentType($request->commentaire);
 
@@ -96,6 +102,9 @@ class ReviewController extends Controller
         return redirect()->route('reviews.index')->with('success', 'Avis créé avec succès.');
     }
 
+    /**
+     * ✏️ Formulaire d’édition
+     */
     public function edit(Review $review)
     {
         $user = Auth::user();
@@ -104,7 +113,7 @@ class ReviewController extends Controller
             abort(403, 'Accès non autorisé.');
         }
 
-        if ($user->role === 'admin' || $user->role === 'moderator') {
+        if (in_array($user->role, ['admin', 'moderator'])) {
             $books = Book::where('is_valid', true)->get();
         } else {
             $reservedBookIds = Reservation::where('user_id', $user->id)
@@ -118,6 +127,9 @@ class ReviewController extends Controller
         return view('reviews.edit', compact('review', 'books'));
     }
 
+    /**
+     * 🔄 Mettre à jour un avis
+     */
     public function update(Request $request, Review $review)
     {
         $user = Auth::user();
@@ -144,7 +156,7 @@ class ReviewController extends Controller
             }
         }
 
-        // Nouvelle analyse du commentaire
+        // 🧠 Nouvelle analyse IA du commentaire
         $sentimentScore = $this->sentimentService->getSentimentScore($request->commentaire);
         $sentimentType = $this->sentimentService->getSentimentType($request->commentaire);
 
@@ -160,6 +172,9 @@ class ReviewController extends Controller
         return redirect()->route('reviews.index')->with('success', 'Avis modifié avec succès.');
     }
 
+    /**
+     * 🗑️ Supprimer un avis
+     */
     public function destroy(Review $review)
     {
         $user = Auth::user();
@@ -172,4 +187,43 @@ class ReviewController extends Controller
 
         return redirect()->route('reviews.index')->with('success', 'Avis supprimé avec succès.');
     }
+
+    /**
+     * 🤖 Résumé automatique des avis d’un livre via IA
+     */
+    public function summarizeBookReviews($bookId)
+    {
+        $book = Book::find($bookId);
+
+        if (!$book) {
+            return redirect()->back()->with('error', 'Livre introuvable.');
+        }
+
+        $reviews = Review::where('book_id', $bookId)->pluck('commentaire')->toArray();
+
+        if (empty($reviews)) {
+            return view('reviews.summary', [
+                'book' => $book,
+                'summary' => 'Aucun avis trouvé pour ce livre.'
+            ]);
+        }
+
+        try {
+            // 🔗 Appel API vers ton microservice IA
+            $response = Http::post(env('AI_SUMMARY_URL'), [
+                'reviews' => $reviews
+            ]);
+
+            if ($response->successful()) {
+                $summary = $response->json()['summary'] ?? 'Résumé non disponible.';
+            } else {
+                $summary = 'Erreur : impossible de générer le résumé.';
+            }
+        } catch (\Exception $e) {
+            $summary = 'Erreur de connexion à l’IA : ' . $e->getMessage();
+        }
+
+        return view('reviews.summary', compact('summary', 'book'));
+    }
 }
+

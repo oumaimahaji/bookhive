@@ -250,6 +250,42 @@
             </div>
         </div>
 
+        {{-- Chatbot Assistant --}}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h6 class="mb-0">Assistant BookHive 🤖</h6>
+                                <p class="text-sm text-secondary mb-0">Posez vos questions sur les livres et réservations</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="chatbotForm" class="mb-3">
+                            @csrf
+                            <div class="input-group">
+                                <input type="text" id="chatbotMessage" name="message" class="form-control"
+                                       placeholder="Ex: Quels livres avez-vous ? Comment réserver ?"
+                                       required maxlength="500" style="border-radius: 20px 0 0 20px;">
+                                <button class="btn btn-primary" type="submit" style="border-radius: 0 20px 20px 0;">
+                                    <i class="fas fa-paper-plane"></i> Envoyer
+                                </button>
+                            </div>
+                        </form>
+
+                        <div id="chatbotResponse" class="alert alert-light" style="display: none; border-radius: 15px; min-height: 60px; align-items: center;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-robot text-primary me-2"></i>
+                                <span id="responseText">Bonjour ! Je suis votre assistant BookHive. Posez-moi une question sur les livres, réservations ou notre bibliothèque !</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const editForm = document.querySelector('form[action*="reservations.update"]');
@@ -367,7 +403,85 @@
             });
         </script>
 
-        {{-- Tableau des réservations --}}
+        {{-- Chatbot JavaScript --}}
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatbotForm = document.getElementById('chatbotForm');
+            const chatbotResponse = document.getElementById('chatbotResponse');
+            const responseText = document.getElementById('responseText');
+
+            if (chatbotForm) {
+                chatbotForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const messageInput = document.getElementById('chatbotMessage');
+                    const message = messageInput.value.trim();
+
+                    // Client-side validation
+                    if (!message) {
+                        responseText.textContent = "Veuillez saisir un message.";
+                        chatbotResponse.style.display = 'flex';
+                        chatbotResponse.className = 'alert alert-warning';
+                        messageInput.focus();
+                        return;
+                    }
+
+                    if (message.length > 500) {
+                        responseText.textContent = "Le message ne peut pas dépasser 500 caractères.";
+                        chatbotResponse.style.display = 'flex';
+                        chatbotResponse.className = 'alert alert-warning';
+                        return;
+                    }
+
+                    // Show loading state
+                    responseText.textContent = "Envoi en cours...";
+                    chatbotResponse.style.display = 'flex';
+                    chatbotResponse.className = 'alert alert-info';
+
+                    const formData = new FormData(e.target);
+
+                    try {
+                        const res = await fetch("/chatbot", {
+                            method: "POST",
+                            body: formData,
+                            headers: {
+                                "Accept": "application/json"
+                            }
+                        });
+
+                        if (!res.ok) {
+                            let errorMessage = `Erreur HTTP ${res.status}`;
+                            if (res.status === 422) {
+                                errorMessage = "Message invalide. Vérifiez que votre message n'est pas vide et ne dépasse pas 500 caractères.";
+                            }
+                            throw new Error(errorMessage);
+                        }
+
+                        const data = await res.json();
+
+                        // Show success response
+                        responseText.textContent = data.response;
+                        chatbotResponse.className = 'alert alert-light';
+
+                    } catch (error) {
+                        console.error('Chatbot error:', error);
+                        responseText.textContent = "Désolé, une erreur est survenue. Veuillez réessayer.";
+                        chatbotResponse.className = 'alert alert-danger';
+                    }
+
+                    // Clear input
+                    messageInput.value = "";
+                });
+            }
+
+            // Show initial welcome message
+            if (chatbotResponse && responseText) {
+                responseText.textContent = "Bonjour ! Je suis votre assistant BookHive. Posez-moi une question sur les livres, réservations ou notre bibliothèque !";
+                chatbotResponse.style.display = 'flex';
+                chatbotResponse.className = 'alert alert-light';
+            }
+        });
+        </script>
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
@@ -453,7 +567,7 @@
                                                 @endif
 
                                                 @if($reservation->statut === 'confirmee' && $reservation->book->pdf_path && $reservation->user_id === Auth::id())
-                                                    <a href="{{ route('books.download', $reservation->book) }}"
+                                                    <a href="{{ route('books.download', $reservation->book->id) }}"
                                                        class="text-primary font-weight-bold text-xs" target="_blank">
                                                         <i class="fas fa-download me-1"></i>Télécharger PDF
                                                     </a>

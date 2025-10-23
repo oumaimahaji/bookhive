@@ -31,8 +31,18 @@
                 </a>
             </li>
 
-            
-            
+            <!-- Library / Books -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Library</h6>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ Request::is('user/books') ? 'active' : '' }}" href="{{ route('user.books') }}">
+                    <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fas fa-book text-dark"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Browse Books</span>
+                </a>
+            </li>
 
             <!-- Reservations -->
             <li class="nav-item">
@@ -93,7 +103,16 @@
                     <span class="nav-link-text ms-1">Notifications</span>
                 </a>
             </li>
-
+          
+<li class="nav-item">
+    <a class="nav-link {{ Request::routeIs('user.clubs.recommended') ? 'active' : '' }}" 
+       href="{{ route('user.clubs.recommended') }}">
+        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="fas fa-star text-warning text-sm opacity-10"></i>
+        </div>
+        <span class="nav-link-text ms-1">Clubs Recommandés</span>
+    </a>
+</li>
             <!-- Logout -->
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

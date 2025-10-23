@@ -40,7 +40,7 @@ def analyze_sentiment(text):
         'method': 'fallback'
     })
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     if len(sys.argv) > 1:
         text = ' '.join(sys.argv[1:])
         result = analyze_sentiment(text)
