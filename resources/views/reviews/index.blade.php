@@ -6,6 +6,36 @@
         <div class="row mb-3">
             <div class="col-12 text-end">
                 <a href="{{ route('reviews.create') }}" class="btn btn-primary">Nouvel Avis</a>
+                @if($books->count() > 0)
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-info" onclick="toggleSummaryMenu()">
+                            🤖 Résumé IA
+                        </button>
+                        <div id="summaryMenu" class="dropdown-menu-custom" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; min-width: 200px;">
+                            @foreach($books->take(5) as $book)
+                                <a class="dropdown-item-custom" href="{{ route('reviews.summary', $book->id) }}" style="display: block; padding: 8px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">
+                                    📖 {{ Str::limit($book->titre, 25) }}
+                                </a>
+                            @endforeach
+                            @if($books->count() > 5)
+                                <div style="padding: 8px 12px; color: #666; font-size: 12px; border-top: 1px solid #eee; background: #f8f9fa;">
+                                    ... Et {{ $books->count() - 5 }} autres livres
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @else
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-info" onclick="toggleSummaryMenu()" title="Aucun livre disponible pour le moment">
+                            🤖 Résumé IA
+                        </button>
+                        <div id="summaryMenu" class="dropdown-menu-custom" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; min-width: 200px;">
+                            <div style="padding: 8px 12px; color: #666; font-size: 12px;">
+                                📚 Aucun livre disponible pour le résumé IA
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -303,4 +333,29 @@
     </div>
 </main>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonction personnalisée pour le menu de résumé IA
+    window.toggleSummaryMenu = function() {
+        const menu = document.getElementById('summaryMenu');
+        if (menu) {
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+            } else {
+                menu.style.display = 'block';
+                // Fermer le menu quand on clique ailleurs
+                setTimeout(function() {
+                    document.addEventListener('click', function closeMenu(e) {
+                        const button = document.querySelector('button[onclick="toggleSummaryMenu()"]');
+                        if (!button.contains(e.target) && !menu.contains(e.target)) {
+                            menu.style.display = 'none';
+                            document.removeEventListener('click', closeMenu);
+                        }
+                    });
+                }, 100);
+            }
+        }
+    };
+});
+</script>
 @endsection

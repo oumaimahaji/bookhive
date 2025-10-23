@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showToast(message, type = 'info') {
         // Créer un toast Bootstrap simple
         const toast = document.createElement('div');
-        toast.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show`;
+        toast.className = 'alert alert-' + (type === 'error' ? 'danger' : 'success') + ' alert-dismissible fade show';
         toast.innerHTML = `
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>

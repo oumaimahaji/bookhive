@@ -16,9 +16,9 @@ class Kernel extends ConsoleKernel
         // Envoyer les rappels tous les jours à 9h00
         $schedule->command('events:send-reminders')
                  ->dailyAt('09:00')
-                 ->timezone('Africa/Tunis'); // Ajustez le fuseau horaire selon votre besoin
+                 ->timezone('Africa/Tunis');
 
-        // Vous pouvez aussi l'exécuter plus fréquemment pour les tests
+        // Pour les tests, vous pouvez utiliser:
         // $schedule->command('events:send-reminders')->everyMinute();
     }
 

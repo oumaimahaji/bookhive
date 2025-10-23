@@ -38,7 +38,7 @@ class CategoryController extends Controller
         }
 
         // PAGINATION AVANCÉE - 5 CATÉGORIES PAR PAGE
-        $per_page = 5;
+        $per_page = 4;
         $categories = $query->paginate($per_page);
         $categories->appends($request->all());
 

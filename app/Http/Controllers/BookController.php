@@ -51,7 +51,7 @@ class BookController extends Controller
         }
 
         // PAGINATION - CORRIGÉ : 5 livres par page
-        $books = $query->paginate(5);
+        $books = $query->paginate(3);
         
         // Garder les paramètres de recherche dans la pagination
         if ($request->hasAny(['search', 'sort_by', 'sort_order'])) {
@@ -359,10 +359,18 @@ class BookController extends Controller
     public function download(Book $book)
     {
         if (!$book->pdf_path || !Storage::disk('public')->exists($book->pdf_path)) {
+            // Si la requête est AJAX / fetch(), renvoyer JSON clair pour que le JS puisse gérer
+            if (request()->ajax() || request()->wantsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json(['error' => 'Aucun PDF disponible pour ce livre.'], 404);
+            }
             return redirect()->back()->with('error', 'Aucun PDF disponible pour ce livre.');
         }
 
-        return response()->download(storage_path('app/public/' . $book->pdf_path));
+        $path = storage_path('app/public/' . $book->pdf_path);
+        $filename = basename($book->pdf_path);
+
+        // Utiliser download pour les en-têtes corrects (Content-Disposition)
+        return response()->download($path, $filename);
     }
 
     /**
@@ -381,7 +389,7 @@ class BookController extends Controller
             });
         }
 
-        // Appliquer le même tri que dans index()
+        // Appliquer le même tri que dans index
         $sort_by = $request->get('sort_by', 'titre');
         $sort_order = $request->get('sort_order', 'asc');
 

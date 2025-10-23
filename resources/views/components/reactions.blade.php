@@ -64,51 +64,9 @@
     </div>
 </div>
 
-<!-- Modal des réactions détaillées -->
-<div id="reactionsModal-{{ $post->id }}" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg max-w-md w-full max-h-96 overflow-hidden">
-        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 class="text-lg font-semibold">Reactions</h3>
-            <button class="close-modal text-gray-500 hover:text-gray-700" 
-                    onclick="closeReactionsModal('{{ $post->id }}')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="overflow-y-auto p-4 reactions-list" id="reactionsList-{{ $post->id }}">
-            <div class="text-center py-4">
-                <i class="fas fa-spinner fa-spin text-gray-400"></i>
-                <p class="text-gray-500 mt-2">Loading reactions...</p>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
 // Variables globales pour éviter les doubles clics
 let isReacting = {};
-
-// Fonction pour basculer l'affichage de tous les commentaires
-function toggleAllComments(postId) {
-    const myComments = document.getElementById(`my-comments-${postId}`);
-    const allComments = document.getElementById(`all-comments-${postId}`);
-    const viewAllBtn = document.querySelector(`.view-all-comments-btn[data-post-id="${postId}"]`);
-    
-    if (allComments && myComments && viewAllBtn) {
-        const isShowingAll = allComments.style.display === 'block';
-        
-        if (isShowingAll) {
-            // Cacher tous les commentaires, montrer seulement les miens
-            allComments.style.display = 'none';
-            myComments.style.display = 'block';
-            viewAllBtn.textContent = `View all ${viewAllBtn.getAttribute('data-total-comments')} comments`;
-        } else {
-            // Montrer tous les commentaires, cacher les miens
-            allComments.style.display = 'block';
-            myComments.style.display = 'none';
-            viewAllBtn.textContent = 'Hide comments';
-        }
-    }
-}
 
 // Fonction pour basculer l'affichage de tous les commentaires
 function toggleAllComments(postId) {
@@ -120,12 +78,10 @@ function toggleAllComments(postId) {
         const isShowingAll = allComments.style.display === 'block';
         
         if (isShowingAll) {
-            // Cacher tous les commentaires, montrer seulement les récents
             allComments.style.display = 'none';
             recentComments.style.display = 'block';
             viewAllBtn.textContent = `View all ${viewAllBtn.getAttribute('data-total-comments')} comments`;
         } else {
-            // Montrer tous les commentaires, cacher les récents
             allComments.style.display = 'block';
             recentComments.style.display = 'none';
             viewAllBtn.textContent = 'Hide comments';
@@ -138,11 +94,9 @@ function toggleCommentSection(postId) {
     const commentSection = document.getElementById(`comment-section-${postId}`);
     
     if (commentSection) {
-        // Basculer l'affichage du formulaire de commentaire
         const isVisible = commentSection.style.display === 'block';
         commentSection.style.display = isVisible ? 'none' : 'block';
         
-        // Focus sur le champ de commentaire si on l'affiche
         if (!isVisible) {
             setTimeout(() => {
                 const commentInput = commentSection.querySelector('input[name="contenu"]');
@@ -154,16 +108,6 @@ function toggleCommentSection(postId) {
     }
 }
 
-// Fonction pour rafraîchir les commentaires après en avoir ajouté un
-function refreshComments(postId) {
-    // Recharger la page ou faire un AJAX pour rafraîchir les commentaires
-    // Pour l'instant, on va simplement rafraîchir la page
-    setTimeout(() => {
-        window.location.reload();
-    }, 500);
-}
-
-// Les autres fonctions restent identiques...
 function initReactionHover(postId) {
     const reactionBtn = document.querySelector(`.reaction-btn[data-post-id="${postId}"]`);
     const palette = document.getElementById(`reaction-palette-${postId}`);
@@ -173,20 +117,17 @@ function initReactionHover(postId) {
     
     let hideTimeout;
     
-    // Montrer la palette au hover
     reactionBtn.addEventListener('mouseenter', function() {
         clearTimeout(hideTimeout);
         palette.classList.remove('hidden');
     });
     
-    // Cacher la palette quand la souris quitte
     group.addEventListener('mouseleave', function() {
         hideTimeout = setTimeout(() => {
             palette.classList.add('hidden');
         }, 300);
     });
     
-    // Garder la palette visible quand la souris est dessus
     palette.addEventListener('mouseenter', function() {
         clearTimeout(hideTimeout);
     });
@@ -207,9 +148,7 @@ function initReactionOptions(postId) {
             e.stopPropagation();
             
             const reaction = this.getAttribute('data-reaction');
-            console.log('Reaction option clicked:', postId, reaction);
             
-            // Cacher la palette après le clic
             const palette = document.getElementById(`reaction-palette-${postId}`);
             if (palette) {
                 palette.classList.add('hidden');
@@ -232,21 +171,16 @@ function handleReactionClick(postId) {
 }
 
 function reactToPost(postId, reaction) {
-    // Éviter les doubles clics
     if (isReacting[postId]) {
-        console.log('Already reacting to post:', postId);
         return;
     }
     
     isReacting[postId] = true;
-    console.log('Reacting to post:', postId, 'with:', reaction);
     
-    // Récupérer le token CSRF
     let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
                    document.querySelector('input[name="_token"]')?.value ||
                    '{{ csrf_token() }}';
 
-    // Désactiver le bouton pendant la requête
     const reactionBtn = document.querySelector(`.reaction-btn[data-post-id="${postId}"]`);
     if (reactionBtn) {
         reactionBtn.disabled = true;
@@ -266,14 +200,12 @@ function reactToPost(postId, reaction) {
         })
     })
     .then(response => {
-        console.log('Response status:', response.status);
         if (!response.ok) {
             throw new Error('Network response was not ok: ' + response.status);
         }
         return response.json();
     })
     .then(data => {
-        console.log('Success:', data);
         updateReactionUI(postId, data);
     })
     .catch(error => {
@@ -281,7 +213,6 @@ function reactToPost(postId, reaction) {
         alert('Error reacting to post: ' + error.message);
     })
     .finally(() => {
-        // Réactiver le bouton
         if (reactionBtn) {
             reactionBtn.disabled = false;
             reactionBtn.classList.remove('opacity-50');
@@ -291,11 +222,8 @@ function reactToPost(postId, reaction) {
 }
 
 function updateReactionUI(postId, data) {
-    console.log('Updating UI for post:', postId, 'with data:', data);
-    
     const container = document.querySelector(`.reactions-container[data-post-id="${postId}"]`);
     if (!container) {
-        console.error('Container not found for post:', postId);
         return;
     }
 
@@ -306,11 +234,9 @@ function updateReactionUI(postId, data) {
     const reactionIconsContainer = container.querySelector(`#reaction-icons-${postId}`);
     
     if (!reactionBtn || !reactionText || !reactionIcon) {
-        console.error('One or more reaction elements not found');
         return;
     }
     
-    // MISE À JOUR IMMÉDIATE ET STABLE
     if (data.user_reaction) {
         reactionBtn.setAttribute('data-user-reaction', data.user_reaction);
         const reactionClasses = {
@@ -329,7 +255,6 @@ function updateReactionUI(postId, data) {
         reactionText.textContent = 'Like';
     }
     
-    // Mettre à jour le compteur total
     const totalReactions = data.total_reactions || 0;
     if (reactionCount) {
         if (totalReactions > 0) {
@@ -340,7 +265,6 @@ function updateReactionUI(postId, data) {
         }
     }
     
-    // Mettre à jour les icônes des réactions populaires
     updateReactionIcons(postId, data.reactions_count);
 }
 
@@ -374,40 +298,18 @@ function updateReactionIcons(postId, reactionsCount) {
     container.innerHTML = html;
 }
 
+// FONCTIONS POUR LE MODAL DES RÉACTIONS (le modal est maintenant dans le layout principal)
+
 // Fonction pour afficher le modal des réactions
 function showReactionsModal(postId) {
     const modal = document.getElementById(`reactionsModal-${postId}`);
-    const list = document.getElementById(`reactionsList-${postId}`);
     
     if (modal) {
         modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     }
     
-    if (list) {
-        list.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-gray-400"></i><p class="text-gray-500 mt-2">Loading reactions...</p></div>';
-        
-        fetch(`/user/posts/${postId}/reactions`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to load reactions');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                displayReactionsList(list, data.reactions);
-            })
-            .catch(error => {
-                console.error('Error loading reactions:', error);
-                list.innerHTML = `<div class="text-center py-4 text-red-500">
-                    <i class="fas fa-exclamation-triangle mb-2"></i>
-                    <p>Error loading reactions</p>
-                    <p class="text-sm text-gray-500 mt-1">${error.message}</p>
-                </div>`;
-            });
-    }
+    loadReactionsForModal(postId);
 }
 
 // Fonction pour fermer le modal des réactions
@@ -415,58 +317,224 @@ function closeReactionsModal(postId) {
     const modal = document.getElementById(`reactionsModal-${postId}`);
     if (modal) {
         modal.classList.add('hidden');
+        document.body.style.overflow = '';
     }
 }
 
-// Fonction pour afficher la liste des réactions dans le modal
-function displayReactionsList(container, reactions) {
-    let html = '';
+// Fonction pour charger les réactions dans le modal
+function loadReactionsForModal(postId) {
+    const list = document.getElementById(`reactionsList-${postId}`);
+    const tabs = document.getElementById(`reactionTabs-${postId}`);
+    
+    if (list) {
+        list.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-gray-400 text-2xl mb-3"></i><p class="text-gray-500">Loading reactions...</p></div>';
+    }
+    
+    if (tabs) {
+        tabs.innerHTML = '';
+    }
+    
+    fetch(`/user/posts/${postId}/reactions`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load reactions');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            displayReactionsModal(postId, data.reactions);
+        })
+        .catch(error => {
+            console.error('Error loading reactions:', error);
+            const list = document.getElementById(`reactionsList-${postId}`);
+            if (list) {
+                list.innerHTML = `<div class="text-center py-8 text-red-500">
+                    <i class="fas fa-exclamation-triangle text-2xl mb-3"></i>
+                    <p class="font-medium">Error loading reactions</p>
+                    <p class="text-sm text-gray-500 mt-2">${error.message}</p>
+                </div>`;
+            }
+        });
+}
+
+// Fonction pour afficher les réactions dans le modal avec onglets
+function displayReactionsModal(postId, reactions) {
+    const list = document.getElementById(`reactionsList-${postId}`);
+    const tabs = document.getElementById(`reactionTabs-${postId}`);
     
     if (!reactions || Object.keys(reactions).length === 0) {
-        html = '<p class="text-gray-500 text-center py-4">No reactions yet</p>';
-    } else {
-        const sortedReactions = Object.entries(reactions).sort(([,a], [,b]) => b.count - a.count);
-        
-        sortedReactions.forEach(([name, data]) => {
-            html += `<div class="mb-6">`;
-            html += `<div class="flex items-center gap-3 mb-3 p-3 bg-gray-50 rounded-lg">`;
-            html += `<i class="${data.reaction.icon} ${data.reaction.color} text-xl"></i>`;
-            html += `<div class="flex-1">`;
-            html += `<span class="font-semibold text-gray-900">${name.charAt(0).toUpperCase() + name.slice(1)}</span>`;
-            html += `<span class="text-gray-500 ml-2">${data.count} ${data.count === 1 ? 'person' : 'people'}</span>`;
-            html += `</div>`;
-            html += `</div>`;
-            html += `<div class="space-y-2 ml-4">`;
-            
-            if (data.users && data.users.length > 0) {
-                data.users.forEach(user => {
-                    if (user && user.name) {
-                        html += `<div class="flex items-center gap-3 py-2">`;
-                        html += `<div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">`;
-                        html += user.name.charAt(0).toUpperCase();
-                        html += `</div>`;
-                        html += `<span class="text-sm text-gray-700">${user.name}</span>`;
-                        html += `</div>`;
-                    }
-                });
-                
-                if (data.count > data.users.length) {
-                    html += `<div class="text-sm text-gray-500 mt-2">and ${data.count - data.users.length} more...</div>`;
-                }
-            }
-            
-            html += `</div></div>`;
-        });
+        list.innerHTML = `
+            <div class="text-center py-12">
+                <i class="fas fa-heart text-gray-300 text-4xl mb-4"></i>
+                <p class="text-gray-500 text-lg">No reactions yet</p>
+                <p class="text-gray-400 text-sm mt-2">Be the first to react to this post!</p>
+            </div>
+        `;
+        return;
     }
     
-    if (container) {
-        container.innerHTML = html;
-    }
+    // Créer les onglets
+    const sortedReactions = Object.entries(reactions).sort(([,a], [,b]) => b.count - a.count);
+    let tabsHtml = '';
+    let contentHtml = '';
+    
+    // Onglet "All" (Toutes les réactions)
+    tabsHtml += `
+        <button class="tab-btn flex items-center gap-2 px-4 py-3 border-b-2 border-blue-600 text-blue-600 font-medium whitespace-nowrap"
+                data-tab="all" onclick="switchReactionTab('${postId}', 'all')">
+            <i class="fas fa-layer-group"></i>
+            <span>All</span>
+            <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">${Object.values(reactions).reduce((sum, r) => sum + r.count, 0)}</span>
+        </button>
+    `;
+    
+    // Onglets par type de réaction
+    sortedReactions.forEach(([name, data], index) => {
+        const isActive = index === 0;
+        tabsHtml += `
+            <button class="tab-btn flex items-center gap-2 px-4 py-3 border-b-2 ${isActive ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600'} font-medium whitespace-nowrap hover:text-blue-600 transition-colors"
+                    data-tab="${name}" onclick="switchReactionTab('${postId}', '${name}')">
+                <i class="${data.reaction.icon} ${data.reaction.color}"></i>
+                <span>${name.charAt(0).toUpperCase() + name.slice(1)}</span>
+                <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">${data.count}</span>
+            </button>
+        `;
+    });
+    
+    // Contenu pour l'onglet "All"
+    contentHtml += `
+        <div id="tab-content-all-${postId}" class="tab-content space-y-6">
+    `;
+    
+    sortedReactions.forEach(([name, data]) => {
+        contentHtml += `
+            <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex items-center gap-3 mb-3">
+                    <i class="${data.reaction.icon} ${data.reaction.color} text-xl"></i>
+                    <div class="flex-1">
+                        <span class="font-semibold text-gray-900">${name.charAt(0).toUpperCase() + name.slice(1)}</span>
+                        <span class="text-gray-500 ml-2">${data.count} ${data.count === 1 ? 'person' : 'people'}</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        `;
+        
+        data.users.slice(0, 10).forEach(user => {
+            contentHtml += `
+                <div class="flex items-center gap-3 p-2 bg-white rounded-lg">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        ${user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-900">${user.name}</span>
+                        ${user.email ? `<p class="text-xs text-gray-500">${user.email}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        contentHtml += `
+                </div>
+        `;
+        
+        if (data.count > 10) {
+            contentHtml += `
+                <div class="text-center mt-3 pt-3 border-t border-gray-200">
+                    <span class="text-sm text-gray-500">and ${data.count - 10} more people</span>
+                </div>
+            `;
+        }
+        
+        contentHtml += `
+            </div>
+        `;
+    });
+    
+    contentHtml += `
+        </div>
+    `;
+    
+    // Contenu pour chaque onglet de réaction
+    sortedReactions.forEach(([name, data]) => {
+        contentHtml += `
+            <div id="tab-content-${name}-${postId}" class="tab-content hidden">
+                <div class="text-center mb-6">
+                    <i class="${data.reaction.icon} ${data.reaction.color} text-4xl mb-3"></i>
+                    <h4 class="text-xl font-semibold text-gray-900">${name.charAt(0).toUpperCase() + name.slice(1)}</h4>
+                    <p class="text-gray-600">${data.count} ${data.count === 1 ? 'person' : 'people'} reacted with ${name}</p>
+                </div>
+                <div class="space-y-3">
+        `;
+        
+        data.users.forEach(user => {
+            contentHtml += `
+                <div class="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                        ${user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="flex-1">
+                        <span class="font-semibold text-gray-900">${user.name}</span>
+                        ${user.email ? `<p class="text-sm text-gray-500">${user.email}</p>` : ''}
+                    </div>
+                    <div class="text-right">
+                        <i class="${data.reaction.icon} ${data.reaction.color}"></i>
+                    </div>
+                </div>
+            `;
+        });
+        
+        contentHtml += `
+                </div>
+        `;
+        
+        if (data.count > data.users.length) {
+            contentHtml += `
+                <div class="text-center mt-6 pt-4 border-t border-gray-200">
+                    <span class="text-gray-500">and ${data.count - data.users.length} more people</span>
+                </div>
+            `;
+        }
+        
+        contentHtml += `
+            </div>
+        `;
+    });
+    
+    if (tabs) tabs.innerHTML = tabsHtml;
+    if (list) list.innerHTML = contentHtml;
 }
+
+// Fonction pour changer d'onglet dans le modal
+function switchReactionTab(postId, tabName) {
+    // Mettre à jour les onglets actifs
+    const tabs = document.querySelectorAll(`#reactionTabs-${postId} .tab-btn`);
+    tabs.forEach(tab => {
+        const tabType = tab.getAttribute('data-tab');
+        if (tabType === tabName) {
+            tab.classList.add('border-blue-600', 'text-blue-600');
+            tab.classList.remove('border-transparent', 'text-gray-600');
+        } else {
+            tab.classList.remove('border-blue-600', 'text-blue-600');
+            tab.classList.add('border-transparent', 'text-gray-600');
+        }
+    });
+    
+    // Afficher le contenu correspondant
+    const contents = document.querySelectorAll(`#reactionsList-${postId} .tab-content`);
+    contents.forEach(content => {
+        if (content.id === `tab-content-${tabName}-${postId}`) {
+            content.classList.remove('hidden');
+        } else {
+            content.classList.add('hidden');
+        }
+    });
+}
+
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Reactions system initialized');
-    
     // Initialiser le hover pour chaque post
     document.querySelectorAll('.reactions-container').forEach(container => {
         const postId = container.getAttribute('data-post-id');
@@ -496,6 +564,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const postId = btn.getAttribute('data-post-id');
         const totalComments = btn.textContent.match(/\d+/)?.[0] || '0';
         btn.setAttribute('data-total-comments', totalComments);
+    });
+
+    // Fermer le modal en cliquant en dehors
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('fixed') && e.target.id?.startsWith('reactionsModal-')) {
+            const postId = e.target.id.replace('reactionsModal-', '');
+            closeReactionsModal(postId);
+        }
+    });
+
+    // Fermer le modal avec la touche Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const openModal = document.querySelector('[id^="reactionsModal-"]:not(.hidden)');
+            if (openModal) {
+                const postId = openModal.id.replace('reactionsModal-', '');
+                closeReactionsModal(postId);
+            }
+        }
     });
 });
 </script>

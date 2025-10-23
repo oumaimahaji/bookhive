@@ -150,9 +150,12 @@
                                     @if($editBook->pdf_path)
                                     <div class="mt-2">
                                         <p class="mb-0 small">Current PDF:</p>
-                                        <a href="{{ route('books.download', $editBook->id) }}" class="btn btn-outline-primary btn-xs" target="_blank">
+                                        <button type="button"
+                                            class="btn btn-outline-primary btn-xs js-download-pdf"
+                                            data-url="{{ route('books.download', $editBook->id) }}"
+                                            title="Download PDF">
                                             <i class="fas fa-download me-1"></i>Download PDF
-                                        </a>
+                                        </button>
                                     </div>
                                     @endif
                                 </div>
@@ -248,9 +251,8 @@
                         @if($search_query)
                         for "<strong>{{ $search_query }}</strong>"
                         @endif
-                        @if($books->total() > 0)
-                        - Showing {{ $books->firstItem() }} to {{ $books->lastItem() }} of {{ $books->total() }}
-                        @endif
+                       
+                        
                         <a href="{{ route('books.index') }}" class="float-end text-decoration-none">
                             <small>Clear filters</small>
                         </a>
@@ -290,19 +292,28 @@
                                             <div class="d-flex px-2 py-1">
                                                 @if($book->cover_image)
                                                 @php
-                                                $imageUrl = asset('storage/' . $book->cover_image);
+                                                // CORRECTION : Vérification et construction correcte de l'URL de l'image
+                                                $coverImagePath = $book->cover_image;
+
+                                                // Si le chemin commence déjà par 'storage/', on l'utilise directement
+                                                if (strpos($coverImagePath, 'storage/') === 0) {
+                                                $imageUrl = asset($coverImagePath);
+                                                } else {
+                                                // Sinon, on ajoute 'storage/' devant
+                                                $imageUrl = asset('storage/' . $coverImagePath);
+                                                }
                                                 @endphp
 
-                                                {{-- Image with fallback --}}
+                                                {{-- Image avec gestion d'erreur améliorée --}}
                                                 <div class="position-relative">
                                                     <img src="{{ $imageUrl }}"
                                                         alt="{{ $book->titre }}"
                                                         class="rounded"
                                                         style="width: 50px; height: 65px; object-fit: cover;"
-                                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                        onerror="handleImageError(this)">
 
-                                                    {{-- Fallback if image doesn't load --}}
-                                                    <div class="rounded bg-light d-flex align-items-center justify-content-center d-none position-relative"
+                                                    {{-- Fallback si l'image ne charge pas --}}
+                                                    <div class="rounded bg-light d-flex align-items-center justify-content-center d-none position-relative book-cover-fallback"
                                                         style="width: 50px; height: 65px;">
                                                         <i class="fas fa-book text-muted"></i>
                                                         <small class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 6px;">
@@ -311,7 +322,7 @@
                                                     </div>
                                                 </div>
                                                 @else
-                                                {{-- If no image --}}
+                                                {{-- Si aucune image --}}
                                                 <div class="rounded bg-light d-flex align-items-center justify-content-center"
                                                     style="width: 50px; height: 65px;">
                                                     <i class="fas fa-book text-muted"></i>
@@ -350,13 +361,13 @@
 
                                                 {{-- PDF Button --}}
                                                 @if($book->pdf_path)
-                                                <a href="{{ route('books.download', $book->id) }}"
-                                                    class="btn btn-outline-primary btn-xs px-2"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    title="Download PDF">
+                                                <button type="button"
+                                                    class="btn btn-outline-primary btn-xs px-2 js-download-pdf"
+                                                    data-url="{{ route('books.download', $book->id) }}"
+                                                    title="Download PDF"
+                                                    aria-label="Download PDF">
                                                     <i class="fas fa-file-pdf"></i>
-                                                </a>
+                                                </button>
                                                 @endif
 
                                                 {{-- Delete Button --}}
@@ -393,101 +404,47 @@
             </div>
         </div>
 
-        {{-- ADVANCED PAGINATION --}}
+        {{-- CUSTOM PAGINATION WITHOUT "SHOWING X TO Y OF Z RESULTS" --}}
         @if($books->hasPages())
         <div class="row mt-4">
             <div class="col-12">
                 <div class="d-flex flex-column align-items-center">
-
-                    {{-- Pagination links --}}
-                    <nav>
+                    {{-- Custom pagination without the "Showing" text --}}
+                    <nav aria-label="Page navigation">
                         <ul class="pagination pagination-sm mb-0">
-                            {{-- First link --}}
-                            @if($books->onFirstPage())
-                            <li class="page-item disabled">
-                                <span class="page-link">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </span>
-                            </li>
-                            @else
-                            <li class="page-item">
-                                <a class="page-link" href="{{ $books->url(1) . '&' . http_build_query(request()->except('page')) }}" title="First page">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </a>
-                            </li>
-                            @endif
-
-                            {{-- Previous page --}}
-                            @if($books->onFirstPage())
-                            <li class="page-item disabled">
-                                <span class="page-link">
-                                    <i class="fas fa-angle-left"></i>
-                                </span>
-                            </li>
-                            @else
-                            <li class="page-item">
-                                <a class="page-link" href="{{ $books->previousPageUrl() . '&' . http_build_query(request()->except('page')) }}" title="Previous page">
-                                    <i class="fas fa-angle-left"></i>
-                                </a>
-                            </li>
-                            @endif
-
-                            {{-- Pages around current page --}}
-                            @php
-                            $current = $books->currentPage();
-                            $last = $books->lastPage();
-                            $start = max($current - 2, 1);
-                            $end = min($current + 2, $last);
-
-                            if ($start > 1) {
-                                echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                            }
-                            @endphp
-
-                            @for ($page = $start; $page <= $end; $page++)
-                                @if ($page == $current)
-                                <li class="page-item active">
-                                    <span class="page-link">{{ $page }}</span>
+                            {{-- Previous Page Link --}}
+                            @if ($books->onFirstPage())
+                                <li class="page-item disabled">
+                                    <span class="page-link">&laquo;</span>
                                 </li>
-                                @else
+                            @else
                                 <li class="page-item">
-                                    <a class="page-link" href="{{ $books->url($page) . '&' . http_build_query(request()->except('page')) }}">{{ $page }}</a>
+                                    <a class="page-link" href="{{ $books->previousPageUrl() }}" rel="prev">&laquo;</a>
                                 </li>
-                                @endif
-                            @endfor
-
-                            @if ($end < $last)
-                                <li class="page-item disabled"><span class="page-link">...</span></li>
-                                @endif
-
-                            {{-- Next page --}}
-                            @if($books->hasMorePages())
-                            <li class="page-item">
-                                <a class="page-link" href="{{ $books->nextPageUrl() . '&' . http_build_query(request()->except('page')) }}" title="Next page">
-                                    <i class="fas fa-angle-right"></i>
-                                </a>
-                            </li>
-                            @else
-                            <li class="page-item disabled">
-                                <span class="page-link">
-                                    <i class="fas fa-angle-right"></i>
-                                </span>
-                            </li>
                             @endif
 
-                            {{-- Last link --}}
-                            @if($books->hasMorePages())
-                            <li class="page-item">
-                                <a class="page-link" href="{{ $books->url($books->lastPage()) . '&' . http_build_query(request()->except('page')) }}" title="Last page">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </a>
-                            </li>
+                            {{-- Pagination Elements --}}
+                            @foreach ($books->getUrlRange(1, $books->lastPage()) as $page => $url)
+                                @if ($page == $books->currentPage())
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ $page }}</span>
+                                    </li>
+                                @else
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                    </li>
+                                @endif
+                            @endforeach
+
+                            {{-- Next Page Link --}}
+                            @if ($books->hasMorePages())
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $books->nextPageUrl() }}" rel="next">&raquo;</a>
+                                </li>
                             @else
-                            <li class="page-item disabled">
-                                <span class="page-link">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </span>
-                            </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link">&raquo;</span>
+                                </li>
                             @endif
                         </ul>
                     </nav>
@@ -499,174 +456,318 @@
 </main>
 
 <script>
-// CORRECTION DES ERREURS SVG
-window.addEventListener('error', function(e) {
-    if (e.target && (e.target.tagName === 'svg' || e.target.tagName === 'path')) {
-        e.preventDefault();
-    }
-});
+    // CORRECTION DES ERREURS SVG
+    window.addEventListener('error', function(e) {
+        if (e.target && (e.target.tagName === 'svg' || e.target.tagName === 'path')) {
+            e.preventDefault();
+        }
+    });
 
-// Filtre des erreurs console pour SVG
-const originalConsoleError = console.error;
-console.error = function(...args) {
-    if (args[0] && typeof args[0] === 'string' && 
-        (args[0].includes('attribute d:') || args[0].includes('<path>') || 
-         args[0].includes('M39.198') || args[0].includes('L40.84,0.95') ||
-         args[0].includes('N59_198') || args[0].includes('140.84.0.95'))) {
-        return;
-    }
-    originalConsoleError.apply(console, args);
-};
+    // Filtre des erreurs console pour SVG
+    const originalConsoleError = console.error;
+    console.error = function(...args) {
+        if (args[0] && typeof args[0] === 'string' &&
+            (args[0].includes('attribute d:') || args[0].includes('<path>') ||
+                args[0].includes('M39.198') || args[0].includes('L40.84,0.95') ||
+                args[0].includes('N59_198') || args[0].includes('140.84.0.95'))) {
+            return;
+        }
+        originalConsoleError.apply(console, args);
+    };
 
-// FONCTIONS PRINCIPALES
-function clearSearch() {
-    const searchInput = document.getElementById('searchInput');
-    const searchForm = document.getElementById('searchForm');
-    if (searchInput && searchForm) {
-        searchInput.value = '';
-        searchForm.submit();
-    }
-}
+    // FONCTION POUR GÉRER LES ERREURS D'IMAGE
+    function handleImageError(imgElement) {
+        console.log('Image loading error for:', imgElement.src);
 
-function initializeBookPage() {
-    try {
+        // Masquer l'image défectueuse
+        imgElement.style.display = 'none';
+
+        // Afficher le fallback
+        const fallback = imgElement.nextElementSibling;
+        if (fallback && fallback.classList.contains('book-cover-fallback')) {
+            fallback.classList.remove('d-none');
+            fallback.classList.add('d-flex');
+        }
+    }
+
+    // FONCTIONS PRINCIPALES
+    function clearSearch() {
         const searchInput = document.getElementById('searchInput');
         const searchForm = document.getElementById('searchForm');
-
         if (searchInput && searchForm) {
-            // Real-time search (after 800ms pause)
-            let searchTimeout;
-            searchInput.addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    if (this.value.length === 0 || this.value.length >= 2) {
-                        searchForm.submit();
-                    }
-                }, 800);
-            });
-
-            // Automatic select submission (sorting)
-            const selects = document.querySelectorAll('select[name="sort_by"], select[name="sort_order"]');
-            selects.forEach(select => {
-                if (select) {
-                    select.addEventListener('change', function() {
-                        searchForm.submit();
-                    });
-                }
-            });
+            searchInput.value = '';
+            searchForm.submit();
         }
+    }
 
-        // Script pour le formulaire d'édition
-        <?php if(isset($editBook)): ?>
-        const editSection = document.getElementById('editBookSection');
-        if (editSection) {
-            // Smooth scroll to edit form
-            setTimeout(() => {
-                editSection.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start'
+    function initializeBookPage() {
+        try {
+            const searchInput = document.getElementById('searchInput');
+            const searchForm = document.getElementById('searchForm');
+
+            if (searchInput && searchForm) {
+                // Real-time search (after 800ms pause)
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        if (this.value.length === 0 || this.value.length >= 2) {
+                            searchForm.submit();
+                        }
+                    }, 800);
                 });
-            }, 100);
 
-            // Character counter for description
-            const descriptionField = document.getElementById('editDescription');
-            const charCount = document.getElementById('charCount');
-            
-            if (descriptionField && charCount) {
-                // Initial count
-                charCount.textContent = descriptionField.value.length;
-
-                // Update count on input
-                descriptionField.addEventListener('input', function() {
-                    const length = this.value.length;
-                    charCount.textContent = length;
-
-                    if (length > 450) {
-                        charCount.style.color = 'red';
-                        charCount.style.fontWeight = 'bold';
-                    } else {
-                        charCount.style.color = '';
-                        charCount.style.fontWeight = '';
+                // Automatic select submission (sorting)
+                const selects = document.querySelectorAll('select[name="sort_by"], select[name="sort_order"]');
+                selects.forEach(select => {
+                    if (select) {
+                        select.addEventListener('change', function() {
+                            searchForm.submit();
+                        });
                     }
                 });
             }
-        }
-        <?php endif; ?>
 
-        // Add click handlers for edit buttons
-        const editButtons = document.querySelectorAll('.edit-btn');
-        if (editButtons.length > 0) {
-            editButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const bookTitle = this.getAttribute('data-book-title');
-                    if (bookTitle) {
-                        sessionStorage.setItem('editingBook', bookTitle);
+            // Script pour le formulaire d'édition
+            <?php if (isset($editBook)): ?>
+                const editSection = document.getElementById('editBookSection');
+                if (editSection) {
+                    // Smooth scroll to edit form
+                    setTimeout(() => {
+                        editSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }, 100);
+
+                    // Character counter for description
+                    const descriptionField = document.getElementById('editDescription');
+                    const charCount = document.getElementById('charCount');
+
+                    if (descriptionField && charCount) {
+                        // Initial count
+                        charCount.textContent = descriptionField.value.length;
+
+                        // Update count on input
+                        descriptionField.addEventListener('input', function() {
+                            const length = this.value.length;
+                            charCount.textContent = length;
+
+                            if (length > 450) {
+                                charCount.style.color = 'red';
+                                charCount.style.fontWeight = 'bold';
+                            } else {
+                                charCount.style.color = '';
+                                charCount.style.fontWeight = '';
+                            }
+                        });
+                    }
+                }
+            <?php endif; ?>
+
+            // Add click handlers for edit buttons
+            const editButtons = document.querySelectorAll('.edit-btn');
+            if (editButtons.length > 0) {
+                editButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const bookTitle = this.getAttribute('data-book-title');
+                        if (bookTitle) {
+                            sessionStorage.setItem('editingBook', bookTitle);
+                        }
+                    });
+                });
+            }
+
+            // Vérifier et corriger automatiquement les images qui n'ont pas chargé
+            setTimeout(() => {
+                const images = document.querySelectorAll('td img[src*="storage/"]');
+                images.forEach(img => {
+                    if (img.complete && img.naturalHeight === 0) {
+                        handleImageError(img);
                     }
                 });
-            });
-        }
-    } catch (error) {
-        console.warn('Book page initialization error:', error);
-    }
-}
+            }, 500);
 
-// INITIALISATION
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeBookPage);
-} else {
-    setTimeout(initializeBookPage, 100);
-}
+        } catch (error) {
+            console.warn('Book page initialization error:', error);
+        }
+    }
+
+    // INITIALISATION
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeBookPage);
+    } else {
+        setTimeout(initializeBookPage, 100);
+    }
+
+    /**
+     * DOWNLOAD PDF WITHOUT PAGE RELOAD
+     * Intercept buttons with class "js-download-pdf" and data-url attribute.
+     */
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest && e.target.closest('.js-download-pdf');
+        if (!btn) return;
+
+        e.preventDefault();
+
+        const url = btn.getAttribute('data-url');
+        if (!url) {
+            console.error('PDF URL missing on download button');
+            return;
+        }
+
+        // Optional: give feedback
+        btn.disabled = true;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch(url, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(async (response) => {
+            if (!response.ok) {
+                const contentType = response.headers.get('content-type') || '';
+                let data;
+                try {
+                    if (contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        data = await response.text();
+                    }
+                } catch (err) {
+                    data = null;
+                }
+                console.error('Download failed', response.status, data);
+                alert('Impossible de télécharger le PDF. Statut: ' + response.status);
+                return;
+            }
+
+            const blob = await response.blob();
+
+            // If the server returned HTML (e.g. login page), blob.type may be text/html
+            const respContentType = response.headers.get('content-type') || '';
+            if (!respContentType.includes('pdf') && blob.type && !blob.type.includes('pdf')) {
+                const text = await blob.text();
+                console.error('Expected PDF but received:', text);
+                alert('Erreur lors du téléchargement du PDF.');
+                return;
+            }
+
+            // Get filename from Content-Disposition if present
+            let filename = 'download.pdf';
+            const disposition = response.headers.get('content-disposition');
+            if (disposition) {
+                let match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+                if (match && match[1]) {
+                    filename = decodeURIComponent(match[1].replace(/['"]/g, ''));
+                } else {
+                    match = disposition.match(/filename="?([^"]+)"?/i);
+                    if (match && match[1]) {
+                        filename = match[1];
+                    }
+                }
+            } else {
+                // fallback: try to use last segment of URL
+                try {
+                    const urlObj = new URL(url, window.location.origin);
+                    const parts = urlObj.pathname.split('/');
+                    if (parts.length) {
+                        const last = parts[parts.length - 1];
+                        if (last) filename = last;
+                    }
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+
+            setTimeout(() => {
+                URL.revokeObjectURL(blobUrl);
+                a.remove();
+            }, 1000);
+        }).catch((err) => {
+            console.error('Fetch download error', err);
+            alert('Erreur réseau lors du téléchargement du PDF.');
+        }).finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        });
+    });
 </script>
 
 <style>
-.page-link {
-    color: #d63384;
-    border-color: #dee2e6;
-}
+    .page-link {
+        color: #d63384;
+        border-color: #dee2e6;
+    }
 
-.page-item.active .page-link {
-    background-color: #d63384;
-    border-color: #d63384;
-}
+    .page-item.active .page-link {
+        background-color: #d63384;
+        border-color: #d63384;
+    }
 
-.page-link:hover {
-    color: #a52766;
-}
+    .page-link:hover {
+        color: #a52766;
+    }
 
-.btn-xs {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-}
+    .btn-xs {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
 
-/* Highlight animation for edit section */
-@keyframes highlight-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(214, 51, 132, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(214, 51, 132, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(214, 51, 132, 0); }
-}
+    /* Highlight animation for edit section */
+    @keyframes highlight-pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(214, 51, 132, 0.4);
+        }
 
-#editBookSection .card {
-    animation: highlight-pulse 2s ease-in-out;
-}
+        70% {
+            box-shadow: 0 0 0 10px rgba(214, 51, 132, 0);
+        }
 
-/* CORRECTION DES ERREURS SVG */
-svg:not([width]):not([height]) {
-    display: none !important;
-}
+        100% {
+            box-shadow: 0 0 0 0 rgba(214, 51, 132, 0);
+        }
+    }
 
-svg[width="0"], 
-svg[height="0"],
-svg[style*="display: none"],
-svg[style*="width: 0"],
-svg[style*="height: 0"] {
-    display: none !important;
-}
+    #editBookSection .card {
+        animation: highlight-pulse 2s ease-in-out;
+    }
 
-path[d="M39.198"],
-path[d*="L40.84,0.95"],
-path[d*="140.84.0.95"],
-path[d*="N59_198"] {
-    display: none !important;
-}
+    /* CORRECTION DES ERREURS SVG */
+    svg:not([width]):not([height]) {
+        display: none !important;
+    }
+
+    svg[width="0"],
+    svg[height="0"],
+    svg[style*="display: none"],
+    svg[style*="width: 0"],
+    svg[style*="height: 0"] {
+        display: none !important;
+    }
+
+    path[d="M39.198"],
+    path[d*="L40.84,0.95"],
+    path[d*="140.84.0.95"],
+    path[d*="N59_198"] {
+        display: none !important;
+    }
+
+    /* Styles pour les images de couverture */
+    .book-cover-fallback {
+        border: 1px solid #dee2e6;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
 </style>
 @endsection

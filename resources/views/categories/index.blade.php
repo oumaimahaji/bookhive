@@ -201,6 +201,7 @@
                             <small class="text-muted">{{ $categories->total() }} total category(ies)</small>
                         </div>
                     </div>
+
                     <div class="card-body px-0 pt-0 pb-2">
                         <div class="table-responsive p-0">
                             <table class="table align-items-center mb-0">
@@ -246,14 +247,14 @@
                                                     <i class="fas fa-edit"></i>
                                                 </a>
 
-                                                {{-- PDF Button --}}
-                                                <a href="{{ route('categories.pdf', $category->id) }}"
-                                                    class="btn btn-outline-primary btn-xs px-2"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    title="Download PDF">
+                                                {{-- PDF Button: changed to button that JS intercepts to download without reload --}}
+                                                <button type="button"
+                                                    class="btn btn-outline-primary btn-xs px-2 js-download-pdf"
+                                                    data-url="{{ route('categories.pdf', $category->id) }}"
+                                                    title="Download PDF"
+                                                    aria-label="Download PDF">
                                                     <i class="fas fa-file-pdf"></i>
-                                                </a>
+                                                </button>
 
                                                 {{-- Delete Button --}}
                                                 <form action="{{ route('categories.destroy', $category->id) }}" method="POST" style="display:inline;">
@@ -289,102 +290,48 @@
             </div>
         </div>
 
-        {{-- CENTERED PAGINATION --}}
+        {{-- CENTERED PAGINATION WITHOUT "SHOWING X TO Y OF Z RESULTS" --}}
         @if($categories->hasPages())
         <div class="row mt-4">
             <div class="col-12">
                 <div class="d-flex flex-column align-items-center">
-
-                    {{-- Pagination links --}}
-                    <nav aria-label="Categories pagination">
-                        <ul class="pagination pagination-sm mb-0 justify-content-center">
-                            {{-- First link --}}
-                            @if($categories->onFirstPage())
-                            <li class="page-item disabled">
-                                <span class="page-link">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </span>
-                            </li>
-                            @else
-                            <li class="page-item">
-                                <a class="page-link" href="{{ $categories->url(1) . '&' . http_build_query(request()->except('page')) }}" title="First page">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </a>
-                            </li>
-                            @endif
-
-                            {{-- Previous page --}}
-                            @if($categories->onFirstPage())
-                            <li class="page-item disabled">
-                                <span class="page-link">
-                                    <i class="fas fa-angle-left"></i>
-                                </span>
-                            </li>
-                            @else
-                            <li class="page-item">
-                                <a class="page-link" href="{{ $categories->previousPageUrl() . '&' . http_build_query(request()->except('page')) }}" title="Previous page">
-                                    <i class="fas fa-angle-left"></i>
-                                </a>
-                            </li>
-                            @endif
-
-                            {{-- Pages around current page --}}
-                            @php
-                            $current = $categories->currentPage();
-                            $last = $categories->lastPage();
-                            $start = max($current - 2, 1);
-                            $end = min($current + 2, $last);
-
-                            if ($start > 1) {
-                            echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                            }
-                            @endphp
-
-                            @for ($page = $start; $page <= $end; $page++)
-                                @if ($page==$current)
-                                <li class="page-item active">
-                                <span class="page-link">{{ $page }}</span>
+                    {{-- Custom pagination without the "Showing" text --}}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm mb-0">
+                            {{-- Previous Page Link --}}
+                            @if ($categories->onFirstPage())
+                                <li class="page-item disabled">
+                                    <span class="page-link">&laquo;</span>
                                 </li>
-                                @else
+                            @else
                                 <li class="page-item">
-                                    <a class="page-link" href="{{ $categories->url($page) . '&' . http_build_query(request()->except('page')) }}">{{ $page }}</a>
+                                    <a class="page-link" href="{{ $categories->previousPageUrl() }}" rel="prev">&laquo;</a>
                                 </li>
+                            @endif
+
+                            {{-- Pagination Elements --}}
+                            @foreach ($categories->getUrlRange(1, $categories->lastPage()) as $page => $url)
+                                @if ($page == $categories->currentPage())
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ $page }}</span>
+                                    </li>
+                                @else
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                    </li>
                                 @endif
-                                @endfor
+                            @endforeach
 
-                                @if ($end < $last)
-                                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                                    @endif
-
-                                    {{-- Next page --}}
-                                    @if($categories->hasMorePages())
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ $categories->nextPageUrl() . '&' . http_build_query(request()->except('page')) }}" title="Next page">
-                                            <i class="fas fa-angle-right"></i>
-                                        </a>
-                                    </li>
-                                    @else
-                                    <li class="page-item disabled">
-                                        <span class="page-link">
-                                            <i class="fas fa-angle-right"></i>
-                                        </span>
-                                    </li>
-                                    @endif
-
-                                    {{-- Last link --}}
-                                    @if($categories->hasMorePages())
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ $categories->url($categories->lastPage()) . '&' . http_build_query(request()->except('page')) }}" title="Last page">
-                                            <i class="fas fa-angle-double-right"></i>
-                                        </a>
-                                    </li>
-                                    @else
-                                    <li class="page-item disabled">
-                                        <span class="page-link">
-                                            <i class="fas fa-angle-double-right"></i>
-                                        </span>
-                                    </li>
-                                    @endif
+                            {{-- Next Page Link --}}
+                            @if ($categories->hasMorePages())
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $categories->nextPageUrl() }}" rel="next">&raquo;</a>
+                                </li>
+                            @else
+                                <li class="page-item disabled">
+                                    <span class="page-link">&raquo;</span>
+                                </li>
+                            @endif
                         </ul>
                     </nav>
                 </div>
@@ -603,6 +550,103 @@
                 });
             });
         }
+
+        // Download PDF without reloading the page - intercept .js-download-pdf
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest && e.target.closest('.js-download-pdf');
+            if (!btn) return;
+
+            e.preventDefault();
+
+            const url = btn.getAttribute('data-url');
+            if (!url) {
+                console.error('PDF URL missing on download button');
+                return;
+            }
+
+            btn.disabled = true;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(async (response) => {
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type') || '';
+                    let data;
+                    try {
+                        if (contentType.includes('application/json')) {
+                            data = await response.json();
+                        } else {
+                            data = await response.text();
+                        }
+                    } catch (err) {
+                        data = null;
+                    }
+                    console.error('Category PDF download failed', response.status, data);
+                    alert('Impossible de télécharger le PDF. Statut: ' + response.status);
+                    return;
+                }
+
+                const blob = await response.blob();
+                const respContentType = response.headers.get('content-type') || '';
+                if (!respContentType.includes('pdf') && blob.type && !blob.type.includes('pdf')) {
+                    const text = await blob.text();
+                    console.error('Expected PDF but received:', text);
+                    alert('Erreur lors du téléchargement du PDF.');
+                    return;
+                }
+
+                // Get filename from Content-Disposition if present
+                let filename = 'category.pdf';
+                const disposition = response.headers.get('content-disposition');
+                if (disposition) {
+                    let match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+                    if (match && match[1]) {
+                        filename = decodeURIComponent(match[1].replace(/['"]/g, ''));
+                    } else {
+                        match = disposition.match(/filename="?([^"]+)"?/i);
+                        if (match && match[1]) {
+                            filename = match[1];
+                        }
+                    }
+                } else {
+                    try {
+                        const urlObj = new URL(url, window.location.origin);
+                        const parts = urlObj.pathname.split('/');
+                        if (parts.length) {
+                            const last = parts[parts.length - 1];
+                            if (last) filename = last;
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                }
+
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+
+                setTimeout(() => {
+                    URL.revokeObjectURL(blobUrl);
+                    a.remove();
+                }, 1000);
+            }).catch((err) => {
+                console.error('Fetch download error', err);
+                alert('Erreur réseau lors du téléchargement du PDF.');
+            }).finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            });
+        });
     });
 
     // Gestion des erreurs globales

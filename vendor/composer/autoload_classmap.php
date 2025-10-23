@@ -68,6 +68,7 @@ return array(
     'App\\Models\\Review' => $baseDir . '/app/Models/Review.php',
     'App\\Models\\User' => $baseDir . '/app/Models/User.php',
     'App\\Providers\\AppServiceProvider' => $baseDir . '/app/Providers/AppServiceProvider.php',
+    'App\\Services\\BookAIService' => $baseDir . '/app/Services/BookAIService.php',
     'App\\Services\\DuplicateDetectorService' => $baseDir . '/app/Services/DuplicateDetectorService.php',
     'App\\Services\\TwinwordSentimentService' => $baseDir . '/app/Services/TwinwordSentimentService.php',
     'App\\Services\\TwinwordThemeService' => $baseDir . '/app/Services/TwinwordThemeService.php',
