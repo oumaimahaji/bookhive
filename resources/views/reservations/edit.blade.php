@@ -6,7 +6,7 @@
 
         <div class="row mb-3">
             <div class="col-12 text-start">
-                <a href="{{ route('reservations.index') }}" class="btn btn-secondary">Retour à la liste</a>
+                <a href="{{ route('reservations.index') }}" class="btn btn-secondary">Back to list</a>
             </div>
         </div>
 
@@ -28,7 +28,7 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header pb-0">
-                        <h6>Modifier la Réservation #{{ $reservation->id }}</h6>
+                        <h6>Edit Reservation #{{ $reservation->id }}</h6>
                     </div>
                     <div class="card-body px-4 pt-3 pb-3">
                         <form action="{{ route('reservations.update', $reservation->id) }}" method="POST">
@@ -77,28 +77,28 @@
                             <div class="mb-3">
                                 <label class="form-label">Date de Retour Effectif</label>
                                 <input type="date" name="date_retour_effectif" class="form-control" value="{{ old('date_retour_effectif', $reservation->date_retour_effectif) }}">
-                                <small class="text-muted">Laissez vide si le livre n'est pas encore retourné</small>
+                                <small class="text-muted">Leave empty if the book is not yet returned</small>
                             </div>
 
                             @if(Auth::user()->role === 'admin' || Auth::user()->role === 'moderator')
                             <div class="mb-3">
                                 <label class="form-label">Statut</label>
                                 <select name="statut" class="form-control" required>
-                                    <option value="en_attente" {{ (old('statut', $reservation->statut) == 'en_attente') ? 'selected' : '' }}>En attente</option>
-                                    <option value="confirmee" {{ (old('statut', $reservation->statut) == 'confirmee') ? 'selected' : '' }}>Confirmée</option>
-                                    <option value="retourne" {{ (old('statut', $reservation->statut) == 'retourne') ? 'selected' : '' }}>Retourné</option>
+                                    <option value="en_attente" {{ (old('statut', $reservation->statut) == 'en_attente') ? 'selected' : '' }}>Pending</option>
+                                    <option value="confirmee" {{ (old('statut', $reservation->statut) == 'confirmee') ? 'selected' : '' }}>Confirmed</option>
+                                    <option value="retourne" {{ (old('statut', $reservation->statut) == 'retourne') ? 'selected' : '' }}>Returned</option>
                                 </select>
                             </div>
                             @else
                             <div class="mb-3">
                                 <label class="form-label">Statut</label>
                                 <input type="text" class="form-control" value="{{ $reservation->statut }}" readonly>
-                                <small class="text-muted">Seul l'administrateur ou le modérateur peut modifier le statut</small>
+                                <small class="text-muted">Only the administrator or moderator can modify the status</small>
                             </div>
                             @endif
 
                             <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary">Modifier la Réservation</button>
+                                <button type="submit" class="btn btn-primary">Edit Reservation</button>
                             </div>
                         </form>
 
@@ -106,12 +106,12 @@
                         <!-- Section pour ajouter un avis -->
                         <div class="card border-success mb-4 mt-4">
                             <div class="card-header bg-success text-white">
-                                <h6 class="mb-0"><i class="fas fa-star me-2"></i>Laisser un avis</h6>
+                                <h6 class="mb-0"><i class="fas fa-star me-2"></i>Leave a review</h6>
                             </div>
                             <div class="card-body">
                                 <div class="alert alert-success">
                                     <i class="fas fa-check-circle me-2"></i>
-                                    Votre réservation a été confirmée ! Vous pouvez maintenant laisser un avis sur ce livre.
+                                    Your reservation has been confirmed! You can now leave a review for this book.
                                 </div>
 
                                 @php
@@ -121,7 +121,7 @@
                                 @if($existingReview)
                                     <div class="alert alert-info">
                                         <i class="fas fa-info-circle me-2"></i>
-                                        Vous avez déjà laissé un avis pour ce livre.
+                                        You have already left a review for this book.
                                     </div>
                                 @else
                                     <form action="{{ route('reviews.store') }}" method="POST">
@@ -131,22 +131,22 @@
                                         <div class="mb-3">
                                             <label class="form-label">Note globale <span class="text-danger">*</span></label>
                                             <select name="note" class="form-control" required>
-                                                <option value="">Choisissez votre note</option>
-                                                <option value="1">⭐ - Très mauvais</option>
-                                                <option value="2">⭐⭐ - Mauvais</option>
-                                                <option value="3">⭐⭐⭐ - Moyen</option>
-                                                <option value="4">⭐⭐⭐⭐ - Bon</option>
+                                                <option value="">Choose your rating</option>
+                                                <option value="1">⭐ - Very bad</option>
+                                                <option value="2">⭐⭐ - Bad</option>
+                                                <option value="3">⭐⭐⭐ - Average</option>
+                                                <option value="4">⭐⭐⭐⭐ - Good</option>
                                                 <option value="5">⭐⭐⭐⭐⭐ - Excellent</option>
                                             </select>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Votre commentaire</label>
-                                            <textarea name="commentaire" class="form-control" rows="5" placeholder="Partagez votre expérience de lecture..."></textarea>
+                                            <textarea name="commentaire" class="form-control" rows="5" placeholder="Share your reading experience..."></textarea>
                                         </div>
 
                                         <button type="submit" class="btn btn-success btn-lg">
-                                            <i class="fas fa-paper-plane me-2"></i>Publier l'avis
+                                            <i class="fas fa-paper-plane me-2"></i>Publish the review
                                         </button>
                                     </form>
                                 @endif

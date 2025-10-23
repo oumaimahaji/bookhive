@@ -47,4 +47,10 @@ class ClubLecture extends Model
             ->where('status', 'pending')
             ->exists();
     }
+
+    // Relation avec les membres actifs
+    public function activeMembers()
+    {
+        return $this->hasMany(ClubMember::class, 'club_id')->where('status', 'active');
+    }
 }

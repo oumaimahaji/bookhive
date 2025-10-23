@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Evenement;
@@ -17,16 +16,20 @@ class EventReminderMail extends Mailable
     public $user;
     public $daysUntilEvent;
 
-    public function __construct(Evenement $event, User $user)
+    public function __construct(Evenement $event, User $user, $daysUntilEvent = 2)
     {
         $this->event = $event;
         $this->user = $user;
-        $this->daysUntilEvent = 2; // Rappel 2 jours avant
+        $this->daysUntilEvent = $daysUntilEvent;
     }
 
     public function build()
     {
-        return $this->subject('Rappel : Événement dans 2 jours - ' . $this->event->titre)
+        $subject = $this->daysUntilEvent == 0 
+            ? "Rappel : Événement aujourd'hui - {$this->event->titre}"
+            : "Rappel : Événement dans {$this->daysUntilEvent} jour(s) - {$this->event->titre}";
+
+        return $this->subject($subject)
                     ->view('emails.event_reminder')
                     ->with([
                         'event' => $this->event,

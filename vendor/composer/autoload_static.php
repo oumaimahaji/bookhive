@@ -679,6 +679,7 @@ class ComposerStaticInit257b07da4c24e58df6b29a539074c217
         'App\\Models\\Review' => __DIR__ . '/../..' . '/app/Models/Review.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
+        'App\\Services\\BookAIService' => __DIR__ . '/../..' . '/app/Services/BookAIService.php',
         'App\\Services\\DuplicateDetectorService' => __DIR__ . '/../..' . '/app/Services/DuplicateDetectorService.php',
         'App\\Services\\TwinwordSentimentService' => __DIR__ . '/../..' . '/app/Services/TwinwordSentimentService.php',
         'App\\Services\\TwinwordThemeService' => __DIR__ . '/../..' . '/app/Services/TwinwordThemeService.php',

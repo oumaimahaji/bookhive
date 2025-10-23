@@ -190,7 +190,7 @@
             @foreach($latestBooks as $book)
             <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden border border-gray-100">
                 <!-- Cover image -->
-                <div class="relative h-64 overflow-hidden">
+                <div class="relative h-48 overflow-hidden">
                     @if($book->cover_image)
                     <img src="{{ asset('storage/' . $book->cover_image) }}"
                         alt="Cover of {{ $book->titre }}"
@@ -225,10 +225,13 @@
                 </div>
 
                 <!-- Card content -->
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ $book->titre }}</h3>
-                    <p class="text-gray-600 mb-3">By {{ $book->auteur }}</p>
-                    <p class="text-gray-700 text-sm leading-relaxed line-clamp-3">{{ Str::limit($book->description, 120) }}</p>
+                <div class="p-4">
+                    <h3 class="text-lg font-bold text-gray-900 mb-1 line-clamp-2">{{ $book->titre }}</h3>
+                    <p class="text-sm text-gray-600 mb-1">By {{ $book->auteur }}</p>
+                    @if($book->category)
+                    <p class="text-sm text-purple-600 font-medium mb-2">Category: {{ $book->category->name ?? $book->category->nom }}</p>
+                    @endif
+                    <p class="text-gray-700 text-sm leading-relaxed line-clamp-3">{{ Str::limit($book->description, 140) }}</p>
                 </div>
             </div>
             @endforeach
@@ -263,16 +266,19 @@
             </p>
         </div>
 
-        <!-- Search Form -->
-        <div class="mb-12 max-w-2xl mx-auto">
-            <form action="{{ route('home') }}" method="GET" class="relative">
+        <!-- FONCTIONNALITÉS ORGANISÉES -->
+
+        <!-- 1. RECHERCHE PRINCIPALE -->
+        <div class="mb-8 max-w-4xl mx-auto">
+            <form action="{{ route('home') }}" method="GET" class="relative" id="search-form">
                 <div class="flex gap-3">
                     <div class="flex-1 relative">
                         <input
                             type="text"
-                            name="author"
-                            value="{{ request('author') }}"
-                            placeholder="Search books by author name..."
+                            name="q"
+                            id="search-q"
+                            value="{{ request('q') }}"
+                            placeholder="Search by author or category..."
                             class="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all duration-300 text-lg">
                         <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -280,6 +286,7 @@
                             </svg>
                         </div>
                     </div>
+
                     <button
                         type="submit"
                         class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center gap-2">
@@ -288,7 +295,7 @@
                         </svg>
                         Search
                     </button>
-                    @if(request('author'))
+                    @if(request('q'))
                     <a
                         href="{{ route('home') }}"
                         class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105 flex items-center gap-2">
@@ -302,28 +309,106 @@
             </form>
         </div>
 
-        <!-- Search Results Info -->
-        @if(request('author'))
-        <div class="text-center mb-8">
-            <div class="bg-purple-50 border border-purple-200 rounded-2xl p-6 max-w-md mx-auto">
-                <div class="flex items-center justify-center gap-3">
-                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p class="text-lg text-purple-800">
-                        Showing results for author:
-                        <span class="font-semibold">"{{ request('author') }}"</span>
-                        <span class="text-purple-600">({{ $allBooks->total() }} books found)</span>
-                    </p>
+        <!-- 2. FILTRES AVANCÉS -->
+        <div class="mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 items-center">
+
+                    <!-- Filtre Catégorie -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                        <select id="categoryFilter" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 text-sm">
+                            <option value="">All Categories</option>
+                            @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name ?? $category->nom }} ({{ $category->books_count }})
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Tri des résultats -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Sort by</label>
+                        <select id="sortFilter" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 text-sm">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="title_asc">Title A-Z</option>
+                            <option value="title_desc">Title Z-A</option>
+                            <option value="author_asc">Author A-Z</option>
+                            <option value="author_desc">Author Z-A</option>
+                        </select>
+                    </div>
+
+                    <!-- Éléments par page -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Show per page</label>
+                        <select id="perPageFilter" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 text-sm">
+                            <option value="12">12 Books</option>
+                            <option value="24">24 Books</option>
+                            <option value="48">48 Books</option>
+                            <option value="96">96 Books</option>
+                        </select>
+                    </div>
+
+                    <!-- Mode d'affichage -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">View mode</label>
+                        <div class="flex border border-gray-300 rounded-xl overflow-hidden">
+                            <button class="flex-1 p-3 bg-purple-500 text-white transition-colors view-btn active" data-view="grid" title="Grid View">
+                                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                </svg>
+                            </button>
+                            <button class="flex-1 p-3 bg-white hover:bg-gray-50 transition-colors view-btn" data-view="list" title="List View">
+                                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtres actifs -->
+                <div id="activeFilters" class="mt-4 flex flex-wrap gap-2 hidden">
+                    <span class="text-sm text-gray-600 font-semibold">Active filters:</span>
                 </div>
             </div>
         </div>
-        @endif
 
-        @if($allBooks->count() > 0)
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-12">
+        <!-- 3. RÉSULTATS DE RECHERCHE -->
+        <div id="search-info">
+            @if(request('q'))
+            <div class="text-center mb-8">
+                <div class="bg-purple-50 border border-purple-200 rounded-2xl p-6 max-w-md mx-auto">
+                    <div class="flex items-center justify-center gap-3">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-lg text-purple-800">
+                            Showing results for: <span class="font-semibold">"{{ request('q') }}"</span>
+                            <span class="text-purple-600">({{ $allBooks->total() }} books found)</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @endif
+        </div>
+
+        <!-- Indicateur de chargement -->
+        <div id="loadingIndicator" class="hidden text-center py-12">
+            <div class="inline-flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-lg border border-gray-100">
+                <div class="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-gray-700 font-semibold">Loading books...</span>
+            </div>
+        </div>
+
+        <!-- 4. AFFICHAGE DES LIVRES -->
+
+        <!-- Vue Grille -->
+        <div id="books-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-12">
             @foreach($allBooks as $book)
-            <div class="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100">
+            <div class="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100" data-book-id="{{ $book->id }}">
                 <!-- Cover image -->
                 <div class="relative h-48 overflow-hidden">
                     @if($book->cover_image)
@@ -337,22 +422,19 @@
                         </svg>
                     </div>
                     @endif
-
-                    <!-- Updated Badge -->
-                    <div class="absolute top-2 right-2">
-                        <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
-
-                        </span>
-                    </div>
                 </div>
 
                 <!-- Card content -->
-                <div class="p-3">
-                    <h3 class="font-semibold text-gray-900 mb-1 line-clamp-2 text-xs">{{ $book->titre }}</h3>
-                    <p class="text-gray-600 text-xs mb-2">By {{ $book->auteur }}</p>
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-900 mb-1 line-clamp-2 text-sm">{{ $book->titre }}</h3>
+                    <p class="text-gray-600 text-sm mb-1">By {{ $book->auteur }}</p>
+                    @if($book->category)
+                    <p class="text-sm text-purple-600 font-medium mb-2">Category: {{ $book->category->name ?? $book->category->nom }}</p>
+                    @endif
+                    <p class="text-gray-700 text-sm leading-relaxed line-clamp-3">{{ Str::limit($book->description, 140) }}</p>
 
                     <!-- Last Updated -->
-                    <div class="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                    <div class="text-xs text-gray-500 mt-3 mb-2 flex items-center gap-1">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -376,7 +458,53 @@
             @endforeach
         </div>
 
-        <!-- Pagination -->
+        <!-- Vue Liste -->
+        <div id="list-view" class="hidden space-y-4 mb-12">
+            @foreach($allBooks as $book)
+            <div class="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden">
+                <div class="flex">
+                    <div class="w-32 flex-shrink-0">
+                        @if($book->cover_image)
+                        <img src="{{ asset('storage/' . $book->cover_image) }}"
+                            alt="Cover of {{ $book->titre }}"
+                            class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300">
+                        @else
+                        <div class="w-full h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
+                        @endif
+                    </div>
+                    <div class="flex-1 p-6">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors duration-300">
+                                    {{ $book->titre }}
+                                </h3>
+                                <p class="text-gray-600 mb-1"><strong>By:</strong> {{ $book->auteur }}</p>
+                                @if($book->category)
+                                <span class="inline-block bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full mb-3">
+                                    {{ $book->category->name ?? $book->category->nom }}
+                                </span>
+                                @endif
+                                <p class="text-gray-700 leading-relaxed">{{ Str::limit($book->description, 200) }}</p>
+                            </div>
+                            <div class="text-right">
+                                <a href="{{ route('frontend.book', $book->id) }}"
+                                    class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105">
+                                    View Details
+                                </a>
+                                <div class="text-xs text-gray-500 mt-2">{{ $book->updated_at->diffForHumans() }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <!-- 5. PAGINATION -->
         @if($allBooks->hasPages())
         <div class="flex justify-center">
             <div class="bg-white px-6 py-4 rounded-2xl shadow-lg border border-gray-100">
@@ -385,7 +513,8 @@
         </div>
         @endif
 
-        @else
+        <!-- 6. AUCUN RÉSULTAT -->
+        @if($allBooks->count() === 0)
         <div class="text-center py-20">
             <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
                 <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -393,20 +522,20 @@
                 </svg>
             </div>
             <h3 class="text-2xl font-bold text-gray-700 mb-4">
-                @if(request('author'))
-                No books found for "{{ request('author') }}"
+                @if(request('q'))
+                No books found for "{{ request('q') }}"
                 @else
                 No books available
                 @endif
             </h3>
             <p class="text-gray-500 max-w-md mx-auto mb-6">
-                @if(request('author'))
-                Try searching with a different author name or browse our entire collection.
+                @if(request('q'))
+                Try searching with a different author name or category, or browse our entire collection.
                 @else
                 Our library is being filled with literary treasures. Check back soon to discover our collection.
                 @endif
             </p>
-            @if(request('author'))
+            @if(request('q'))
             <a href="{{ route('home') }}" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105 inline-flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -507,4 +636,395 @@
         overflow: hidden;
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    (function() {
+        // Debounce util
+        function debounce(fn, delay) {
+            let t;
+            return function() {
+                const args = arguments;
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+
+        const searchInput = document.getElementById('search-q');
+        const booksGrid = document.getElementById('books-grid');
+        const listView = document.getElementById('list-view');
+        const searchInfo = document.getElementById('search-info');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const sortFilter = document.getElementById('sortFilter');
+        const perPageFilter = document.getElementById('perPageFilter');
+        const viewButtons = document.querySelectorAll('.view-btn');
+        const activeFilters = document.getElementById('activeFilters');
+
+        // API route existante définie dans web.php
+        const searchUrl = '/api/books/search';
+
+        // État des filtres
+        let currentFilters = {
+            q: '',
+            category: '',
+            sort: 'newest',
+            perPage: 12,
+            view: 'grid'
+        };
+
+        // Initialiser les filtres depuis l'URL
+        function initFiltersFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentFilters.q = urlParams.get('q') || '';
+            currentFilters.category = urlParams.get('category') || '';
+            currentFilters.sort = urlParams.get('sort') || 'newest';
+            currentFilters.perPage = parseInt(urlParams.get('perPage')) || 12;
+
+            // Mettre à jour les champs
+            if (searchInput) searchInput.value = currentFilters.q;
+            if (categoryFilter) categoryFilter.value = currentFilters.category;
+            if (sortFilter) sortFilter.value = currentFilters.sort;
+            if (perPageFilter) perPageFilter.value = currentFilters.perPage;
+
+            updateActiveFiltersDisplay();
+        }
+
+        // Mettre à jour l'affichage des filtres actifs
+        function updateActiveFiltersDisplay() {
+            if (!activeFilters) return;
+
+            const activeFiltersArray = [];
+
+            if (currentFilters.q) {
+                activeFiltersArray.push(`Search: "${currentFilters.q}"`);
+            }
+
+            if (currentFilters.category) {
+                const categoryName = categoryFilter?.options[categoryFilter.selectedIndex]?.text.split(' (')[0] || 'Category';
+                activeFiltersArray.push(`Category: ${categoryName}`);
+            }
+
+            if (currentFilters.sort && currentFilters.sort !== 'newest') {
+                const sortText = sortFilter?.options[sortFilter.selectedIndex]?.text || 'Sorted';
+                activeFiltersArray.push(`Sort: ${sortText}`);
+            }
+
+            if (activeFiltersArray.length > 0) {
+                activeFilters.innerHTML = `
+                    <span class="text-sm text-gray-600 font-semibold">Active filters:</span>
+                    ${activeFiltersArray.map(filter => `
+                        <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1">
+                            ${filter}
+                            <button type="button" class="text-purple-600 hover:text-purple-800" onclick="removeFilter('${filter.split(':')[0].toLowerCase().trim()}')">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </span>
+                    `).join('')}
+                    <button type="button" onclick="clearAllFilters()" class="text-gray-500 hover:text-gray-700 text-xs font-semibold underline">
+                        Clear all
+                    </button>
+                `;
+                activeFilters.classList.remove('hidden');
+            } else {
+                activeFilters.classList.add('hidden');
+            }
+        }
+
+        // Fonctions globales pour les boutons de filtres
+        window.removeFilter = function(filterType) {
+            switch (filterType) {
+                case 'search':
+                    currentFilters.q = '';
+                    if (searchInput) searchInput.value = '';
+                    break;
+                case 'category':
+                    currentFilters.category = '';
+                    if (categoryFilter) categoryFilter.value = '';
+                    break;
+                case 'sort':
+                    currentFilters.sort = 'newest';
+                    if (sortFilter) sortFilter.value = 'newest';
+                    break;
+            }
+            fetchAndRender();
+        };
+
+        window.clearAllFilters = function() {
+            currentFilters = {
+                q: '',
+                category: '',
+                sort: 'newest',
+                perPage: 12,
+                view: 'grid'
+            };
+
+            if (searchInput) searchInput.value = '';
+            if (categoryFilter) categoryFilter.value = '';
+            if (sortFilter) sortFilter.value = 'newest';
+            if (perPageFilter) perPageFilter.value = '12';
+
+            // Réinitialiser la vue
+            viewButtons.forEach(btn => {
+                if (btn.dataset.view === 'grid') {
+                    btn.classList.add('active', 'bg-purple-500', 'text-white');
+                    btn.classList.remove('bg-white', 'bg-gray-100');
+                } else {
+                    btn.classList.remove('active', 'bg-purple-500', 'text-white');
+                    btn.classList.add('bg-white', 'bg-gray-100');
+                }
+            });
+            showGridView();
+
+            fetchAndRender();
+        };
+
+        function buildBookCard(book) {
+            const cover = book.cover_image ? ('/storage/' + book.cover_image) : '';
+            const categoryName = book.category && book.category.name ? book.category.name : '';
+            const description = book.description ? book.description : '';
+            return `
+            <div class="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100" data-book-id="${book.id}">
+                <div class="relative h-48 overflow-hidden">
+                    ${cover ? `<img src="${cover}" alt="Cover of ${escapeHtml(book.titre)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">` :
+                        `<div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>`}
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-900 mb-1 line-clamp-2 text-sm">${escapeHtml(book.titre)}</h3>
+                    <p class="text-gray-600 text-sm mb-1">By ${escapeHtml(book.auteur)}</p>
+                    ${ categoryName ? `<p class="text-sm text-purple-600 font-medium mb-2">Category: ${escapeHtml(categoryName)}</p>` : '' }
+                    <p class="text-gray-700 text-sm leading-relaxed line-clamp-3">${escapeHtml(description)}</p>
+                    <div class="text-xs text-gray-500 mt-3 mb-2 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        ${new Date(book.updated_at).toLocaleDateString()}
+                    </div>
+                    <a href="/book/${book.id}" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 block text-center">
+                        📖 Details
+                    </a>
+                </div>
+            </div>
+            `;
+        }
+
+        function buildBookListItem(book) {
+            const cover = book.cover_image ? ('/storage/' + book.cover_image) : '';
+            const categoryName = book.category && book.category.name ? book.category.name : '';
+            const description = book.description ? book.description : '';
+            return `
+            <div class="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden">
+                <div class="flex">
+                    <div class="w-32 flex-shrink-0">
+                        ${cover ? `<img src="${cover}" alt="Cover of ${escapeHtml(book.titre)}" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300">` :
+                            `<div class="w-full h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>`}
+                    </div>
+                    <div class="flex-1 p-6">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors duration-300">
+                                    ${escapeHtml(book.titre)}
+                                </h3>
+                                <p class="text-gray-600 mb-1"><strong>By:</strong> ${escapeHtml(book.auteur)}</p>
+                                ${ categoryName ? `<span class="inline-block bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full mb-3">${escapeHtml(categoryName)}</span>` : '' }
+                                <p class="text-gray-700 leading-relaxed">${escapeHtml(description)}</p>
+                            </div>
+                            <div class="text-right">
+                                <a href="/book/${book.id}" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105">
+                                    View Details
+                                </a>
+                                <div class="text-xs text-gray-500 mt-2">${new Date(book.updated_at).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        function escapeHtml(unsafe) {
+            if (!unsafe && unsafe !== 0) return '';
+            return String(unsafe)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function showGridView() {
+            if (booksGrid) booksGrid.classList.remove('hidden');
+            if (listView) listView.classList.add('hidden');
+        }
+
+        function showListView() {
+            if (booksGrid) booksGrid.classList.add('hidden');
+            if (listView) listView.classList.remove('hidden');
+        }
+
+        function renderResults(data, pagination) {
+            if (loadingIndicator) loadingIndicator.classList.add('hidden');
+
+            if (!data || data.length === 0) {
+                const noResultsHtml = `<div class="text-center col-span-full py-12">
+                    <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
+                        <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-700 mb-4">No books found</h3>
+                    <p class="text-gray-500 max-w-md mx-auto mb-6">
+                        ${currentFilters.q ? 'Try searching with different terms or clear your filters.' : 'No books match your current filters.'}
+                    </p>
+                    <button onclick="clearAllFilters()" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105 inline-flex items-center gap-2">
+                        Clear All Filters
+                    </button>
+                </div>`;
+
+                if (booksGrid) booksGrid.innerHTML = noResultsHtml;
+                if (listView) listView.innerHTML = noResultsHtml;
+            } else {
+                if (currentFilters.view === 'grid') {
+                    const html = data.map(buildBookCard).join('');
+                    if (booksGrid) booksGrid.innerHTML = html;
+                } else {
+                    const html = data.map(buildBookListItem).join('');
+                    if (listView) listView.innerHTML = html;
+                }
+            }
+
+            // Mettre à jour les informations de recherche
+            if (searchInfo) {
+                if (currentFilters.q) {
+                    searchInfo.innerHTML = `<div class="text-center mb-8">
+                        <div class="bg-purple-50 border border-purple-200 rounded-2xl p-6 max-w-md mx-auto">
+                            <div class="flex items-center justify-center gap-3">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p class="text-lg text-purple-800">
+                                    Showing results for: <span class="font-semibold">"${escapeHtml(currentFilters.q)}"</span>
+                                    <span class="text-purple-600">(${pagination ? pagination.total : 0} books found)</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>`;
+                } else {
+                    searchInfo.innerHTML = '';
+                }
+            }
+
+            updateActiveFiltersDisplay();
+        }
+
+        async function fetchAndRender(page = 1) {
+            if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+
+            const params = new URLSearchParams();
+            if (currentFilters.q) params.append('q', currentFilters.q);
+            if (currentFilters.category) params.append('category', currentFilters.category);
+            if (currentFilters.sort) params.append('sort', currentFilters.sort);
+            if (currentFilters.perPage) params.append('perPage', currentFilters.perPage);
+            if (page) params.append('page', page);
+
+            const url = `${searchUrl}?${params.toString()}`;
+
+            try {
+                const res = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                if (!res.ok) throw new Error('Network error');
+                const json = await res.json();
+                if (json.success) {
+                    renderResults(json.data, json.pagination);
+                } else {
+                    renderResults([], null);
+                }
+            } catch (err) {
+                console.error('Search error', err);
+                if (loadingIndicator) loadingIndicator.classList.add('hidden');
+                renderResults([], null);
+            }
+        }
+
+        // Écouteurs d'événements
+        const debouncedFetch = debounce(function() {
+            currentFilters.q = searchInput ? searchInput.value.trim() : '';
+            fetchAndRender(1);
+        }, 350);
+
+        if (searchInput) searchInput.addEventListener('input', debouncedFetch);
+
+        if (categoryFilter) {
+            categoryFilter.addEventListener('change', function() {
+                currentFilters.category = this.value;
+                fetchAndRender(1);
+            });
+        }
+
+        if (sortFilter) {
+            sortFilter.addEventListener('change', function() {
+                currentFilters.sort = this.value;
+                fetchAndRender(1);
+            });
+        }
+
+        if (perPageFilter) {
+            perPageFilter.addEventListener('change', function() {
+                currentFilters.perPage = parseInt(this.value);
+                fetchAndRender(1);
+            });
+        }
+
+        // Gestion de la vue (grid/list)
+        viewButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const viewType = this.dataset.view;
+
+                // Mettre à jour les boutons actifs
+                viewButtons.forEach(b => {
+                    b.classList.remove('active', 'bg-purple-500', 'text-white');
+                    b.classList.add('bg-white', 'bg-gray-100');
+                });
+                this.classList.add('active', 'bg-purple-500', 'text-white');
+                this.classList.remove('bg-white', 'bg-gray-100');
+
+                // Changer la vue
+                currentFilters.view = viewType;
+                if (viewType === 'grid') {
+                    showGridView();
+                } else {
+                    showListView();
+                }
+
+                // Re-rendre si on a des données
+                fetchAndRender(1);
+            });
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initFiltersFromURL();
+
+            const q = searchInput ? searchInput.value.trim() : '';
+            if (q || currentFilters.category || currentFilters.sort !== 'newest') {
+                fetchAndRender(1);
+            }
+        });
+
+    })();
+</script>
 @endpush

@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InfoUserController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SocialAuthController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ResetController;
 use App\Http\Controllers\SessionsController;
 use App\Http\Controllers\BookController;
@@ -110,8 +111,13 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('reservations', ReservationController::class);
     Route::put('reservations/{reservation}/mark-returned', [ReservationController::class, 'markReturned'])->name('reservations.markReturned');
 
-    // Avis
+   // Avis
     Route::resource('reviews', ReviewController::class);
+    
+    Route::get('/reviews/summary/{bookId}', [ReviewController::class, 'summarizeBookReviews'])
+    ->name('reviews.summary');
+
+
 
     // Gestion des utilisateurs (Admin)
     Route::get('/user-management', [InfoUserController::class, 'userManagement'])->name('user-management');
@@ -127,22 +133,113 @@ Route::middleware(['auth'])->group(function () {
 
 
     // =============================================
-// ROUTES UNIFIÉES POUR LA GESTION ADMIN DES RÉACTIONS (NOUVELLES URL)
-// =============================================
+    // ROUTES UNIFIÉES POUR LA GESTION ADMIN DES RÉACTIONS (NOUVELLES URL)
+    // =============================================
 
-// Page principale de gestion des réactions (NOUVELLE URL SANS CONFLIT)
-Route::get('/admin/reactions-management', [PostController::class, 'reactionsIndex'])->name('admin.posts.reactions.index');
+    // Page principale de gestion des réactions (NOUVELLE URL SANS CONFLIT)
+    Route::get('/admin/reactions-management', [PostController::class, 'reactionsIndex'])->name('admin.posts.reactions.index');
 
-// Suppression des réactions d'un post (NOUVELLE URL SANS CONFLIT)
-Route::delete('/admin/reactions-management/{post}', [PostController::class, 'deletePostReactions'])->name('admin.posts.reactions.delete');
+    // Suppression des réactions d'un post (NOUVELLE URL SANS CONFLIT)
+    Route::delete('/admin/reactions-management/{post}', [PostController::class, 'deletePostReactions'])->name('admin.posts.reactions.delete');
 
-// =============================================
-// ROUTES API POUR LES RÉACTIONS (frontend - NE PAS TOUCHER)
-// =============================================
-Route::post('/posts/{post}/react', [ReactionController::class, 'react'])->name('posts.react');
-Route::get('/posts/{post}/reactions', [ReactionController::class, 'getReactions'])->name('posts.reactions');
-// Suppression individuelle d'une réaction
-Route::delete('/admin/reactions-management/{post}/reaction/{reaction}', [PostController::class, 'deleteSingleReaction'])->name('admin.posts.reactions.delete-single');
+    // =============================================
+    // ROUTES API POUR LES RÉACTIONS (frontend - NE PAS TOUCHER)
+    // =============================================
+    Route::post('/posts/{post}/react', [ReactionController::class, 'react'])->name('posts.react');
+    Route::get('/posts/{post}/reactions', [ReactionController::class, 'getReactions'])->name('posts.reactions');
+    // Suppression individuelle d'une réaction
+    Route::delete('/admin/reactions-management/{post}/reaction/{reaction}', [PostController::class, 'deleteSingleReaction'])->name('admin.posts.reactions.delete-single');
+    // sntiment analytics
+    Route::get('/sentiment-analytics', [App\Http\Controllers\SentimentAnalyticsController::class, 'dashboard'])->name('admin.sentiment.dashboard');
+
+
+
+    // =============================================
+    // DEFINITIVE SENTIMENT ANALYSIS FIX
+    // =============================================
+
+    // Force sentiment analysis for ALL existing content (ONE-TIME FIX)
+    Route::get('/definitive-sentiment-fix', function () {
+        $analyzer = new App\Services\SentimentAnalyzer();
+
+        $results = [
+            'posts_updated' => 0,
+            'comments_updated' => 0,
+            'details' => []
+        ];
+
+        // Update all posts without sentiment or with neutral sentiment
+        $posts = App\Models\Post::whereNull('sentiment')
+            ->orWhere('sentiment', '')
+            ->orWhere('sentiment', 'neutral')
+            ->get();
+
+        foreach ($posts as $post) {
+            $text = $post->titre . ' ' . $post->contenu;
+            $result = $analyzer->analyze($text);
+
+            $post->update([
+                'sentiment' => $result['sentiment'],
+                'sentiment_confidence' => $result['confidence']
+            ]);
+
+            $results['posts_updated']++;
+            $results['details'][] = [
+                'type' => 'post',
+                'id' => $post->id,
+                'title' => $post->titre,
+                'sentiment' => $result['sentiment'],
+                'confidence' => $result['confidence'],
+                'method' => $result['method'] ?? 'unknown'
+            ];
+        }
+
+        // Update all comments without sentiment or with neutral sentiment
+        $comments = App\Models\Comment::whereNull('sentiment')
+            ->orWhere('sentiment', '')
+            ->orWhere('sentiment', 'neutral')
+            ->get();
+
+        foreach ($comments as $comment) {
+            $result = $analyzer->analyze($comment->contenu);
+
+            $comment->update([
+                'sentiment' => $result['sentiment'],
+                'sentiment_confidence' => $result['confidence']
+            ]);
+
+            $results['comments_updated']++;
+            $results['details'][] = [
+                'type' => 'comment',
+                'id' => $comment->id,
+                'content' => substr($comment->contenu, 0, 50),
+                'sentiment' => $result['sentiment'],
+                'confidence' => $result['confidence'],
+                'method' => $result['method'] ?? 'unknown'
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'DEFINITIVE sentiment analysis completed!',
+            'results' => $results,
+            'next_steps' => [
+                '1. Create a new post with: "Ce livre est vraiment excellent et super!"',
+                '2. Create a new comment with: "Je déteste ce contenu, c\'est horrible"',
+                '3. Check your posts/comments - sentiment badges should work now!'
+            ]
+        ]);
+    })->name('definitive.sentiment.fix');
+
+
+
+
+    // Chatbot routes (redirect to reservations where chatbot is integrated)
+    Route::get('/chat', function () {
+        return redirect()->route('reservations.index');
+    });
+    Route::post('/chatbot', [ChatbotController::class, 'askChatbot']);
+
 
 
 
@@ -170,18 +267,28 @@ Route::delete('/admin/reactions-management/{post}/reaction/{reaction}', [PostCon
         Route::delete('posts/{post}', [UserPostController::class, 'deletePost'])->name('user.posts.delete');
         Route::put('posts/{post}', [UserPostController::class, 'update'])->name('user.posts.update');
         // Routes pour les réactions
-Route::post('/posts/{post}/react', [ReactionController::class, 'react'])->name('posts.react');
-Route::get('/posts/{post}/reactions', [ReactionController::class, 'getReactions'])->name('posts.reactions');
+        Route::post('/posts/{post}/react', [ReactionController::class, 'react'])->name('posts.react');
+        Route::get('/posts/{post}/reactions', [ReactionController::class, 'getReactions'])->name('posts.reactions');
 
         // Commentaires utilisateur
         Route::post('posts/{postId}/comments', [UserPostController::class, 'storeComment'])->name('user.comments.store');
         Route::delete('comments/{comment}', [UserPostController::class, 'deleteComment'])->name('user.comments.delete');
+        Route::put('comments/{comment}/update', [UserPostController::class, 'updateComment'])->name('user.comments.update'); // AJOUTÉ
 
         // Posts communautaires
         Route::get('community-posts', [UserPostController::class, 'communityPosts'])->name('user.posts.community');
+        Route::get('/community/posts/search', [UserPostController::class, 'searchPosts'])->name('community.posts.search');
 
         // Activité récente
         Route::get('recent-activity', [UserController::class, 'getRecentActivity'])->name('user.recent-activity');
+
+
+
+
+
+        // NOUVELLE ROUTE - Clubs recommandés
+    Route::get('recommended-clubs', [UserController::class, 'recommendedClubs'])->name('user.clubs.recommended');
+    Route::get('api/recommended-clubs', [UserController::class, 'getRecommendedClubsApi'])->name('user.api.recommended-clubs');
 
         // Notifications
         Route::get('notifications', [UserController::class, 'notifications'])->name('user.notifications');
@@ -271,6 +378,9 @@ Route::get('/posts/{post}/reactions', [ReactionController::class, 'getReactions'
 
     // Routes pour l'API de recherche (dans web.php car vous utilisez le même contrôleur)
     Route::get('/api/books/search', [App\Http\Controllers\FrontendController::class, 'searchBooks']);
+
+
+    
 
     // Dans la section des routes authentifiées
     Route::post('/books/ai/recommendations', [BookController::class, 'getAIRecommendations'])->name('books.ai.recommendations');
