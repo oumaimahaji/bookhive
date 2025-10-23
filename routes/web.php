@@ -243,6 +243,82 @@ Route::middleware(['auth'])->group(function () {
 
 
 
+ // =============================================
+// DEFINITIVE SENTIMENT ANALYSIS FIX
+// =============================================
+
+// Force sentiment analysis for ALL existing content (ONE-TIME FIX)
+Route::get('/definitive-sentiment-fix', function() {
+    $analyzer = new App\Services\SentimentAnalyzer();
+    
+    $results = [
+        'posts_updated' => 0,
+        'comments_updated' => 0,
+        'details' => []
+    ];
+
+    // Update all posts without sentiment or with neutral sentiment
+    $posts = App\Models\Post::whereNull('sentiment')
+        ->orWhere('sentiment', '')
+        ->orWhere('sentiment', 'neutral')
+        ->get();
+
+    foreach ($posts as $post) {
+        $text = $post->titre . ' ' . $post->contenu;
+        $result = $analyzer->analyze($text);
+        
+        $post->update([
+            'sentiment' => $result['sentiment'],
+            'sentiment_confidence' => $result['confidence']
+        ]);
+        
+        $results['posts_updated']++;
+        $results['details'][] = [
+            'type' => 'post',
+            'id' => $post->id,
+            'title' => $post->titre,
+            'sentiment' => $result['sentiment'],
+            'confidence' => $result['confidence'],
+            'method' => $result['method'] ?? 'unknown'
+        ];
+    }
+
+    // Update all comments without sentiment or with neutral sentiment
+    $comments = App\Models\Comment::whereNull('sentiment')
+        ->orWhere('sentiment', '')
+        ->orWhere('sentiment', 'neutral')
+        ->get();
+
+    foreach ($comments as $comment) {
+        $result = $analyzer->analyze($comment->contenu);
+        
+        $comment->update([
+            'sentiment' => $result['sentiment'],
+            'sentiment_confidence' => $result['confidence']
+        ]);
+        
+        $results['comments_updated']++;
+        $results['details'][] = [
+            'type' => 'comment',
+            'id' => $comment->id,
+            'content' => substr($comment->contenu, 0, 50),
+            'sentiment' => $result['sentiment'],
+            'confidence' => $result['confidence'],
+            'method' => $result['method'] ?? 'unknown'
+        ];
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'DEFINITIVE sentiment analysis completed!',
+        'results' => $results,
+        'next_steps' => [
+            '1. Create a new post with: "Ce livre est vraiment excellent et super!"',
+            '2. Create a new comment with: "Je déteste ce contenu, c\'est horrible"',
+            '3. Check your posts/comments - sentiment badges should work now!'
+        ]
+    ]);
+})->name('definitive.sentiment.fix');
 
     // -------------------- ROUTES UTILISATEUR STANDARD --------------------
     Route::prefix('user')->group(function () {
